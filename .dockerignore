@@ -1,0 +1,16 @@
+.git
+.github
+node_modules
+.next
+dist
+build
+coverage
+.env
+.env.*
+!.env.example
+*.md
+!README.md
+scripts/launch
+launch-readiness-report.md
+hardening-report.md
+trivy-*.sarif

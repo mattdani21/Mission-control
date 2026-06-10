@@ -1,0 +1,54 @@
+# Environment & secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+credentials.json
+secrets/
+
+# Node
+node_modules/
+.pnp
+.pnp.js
+.yarn/
+.next/
+out/
+build/
+dist/
+coverage/
+*.tsbuildinfo
+.npm
+.eslintcache
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Local
+*.log
+.cache/
+
+# Launch workflow artifacts
+launch-readiness-report.md
+hardening-report.md
+trivy-*.sarif
+sbom.cdx.json
