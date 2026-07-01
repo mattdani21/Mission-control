@@ -2,17 +2,17 @@
 # Multi-stage; runs as non-root; pinned base; includes healthcheck.
 # Replace the build steps once the app stack is chosen.
 
-FROM node:20.18-bookworm-slim AS deps
+FROM node:26.4-bookworm-slim AS deps
 WORKDIR /app
 COPY package*.json ./
 RUN if [ -f package-lock.json ]; then npm ci --omit=dev; fi
 
-FROM node:20.18-bookworm-slim AS build
+FROM node:26.4-bookworm-slim AS build
 WORKDIR /app
 COPY . .
 RUN if [ -f package.json ]; then npm ci && npm run build || true; fi
 
-FROM node:20.18-bookworm-slim AS runtime
+FROM node:26.4-bookworm-slim AS runtime
 ENV NODE_ENV=production \
     PORT=3000 \
     NPM_CONFIG_UPDATE_NOTIFIER=false
