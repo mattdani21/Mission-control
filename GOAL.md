@@ -10,6 +10,7 @@ Launch Mission Control as the live marketing-operations hub for Empyrean (target
 - [ ] Add a test framework (Vitest) with the first passing tests — audit.sh requires a test suite
 - [ ] Implement `/api/healthz` and `/api/readyz` (Dockerfile HEALTHCHECK probes /api/healthz)
 - [ ] Complete `.env.example` and the real Dockerfile build steps so the image builds
+- [ ] GitHub Actions CI running Vitest + lint + `npm run build` on every PR — the orchestrator's merge gate
 *Definition of done:* `scripts/launch/audit.sh` reports 0 critical gaps and the launch-readiness workflow is green on main.
 
 ### M2 — Auth, campaigns and AI assist
