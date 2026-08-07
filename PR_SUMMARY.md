@@ -81,4 +81,6 @@ path, and the recorded delivery outcome (`sent_at`, Resend message id,
   unchanged. `package-lock.json` gains only the `tsx` dev dependency.
 - The branch is stacked on `orch/21` (app scaffold + auth + AI proxy + usage),
   matching the repo's base-on-previous-branch convention; the incremental diff
-  for this task is ~950 lines (feature ~420, tests ~530).
+  for this task is ~1,600 lines (feature ~700, tests ~930) excluding the
+  lockfile — one cohesive vertical slice (queue + runner + client + routes +
+  worker + docs) with the full test suite that proves M3's definition of done.
