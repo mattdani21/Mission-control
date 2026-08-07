@@ -15,14 +15,18 @@
     "typecheck": "tsc --noEmit",
     "format": "prettier --write .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "db:migrate": "node db/migrate.mjs",
+    "db:local": "node scripts/launch/local-db.mjs"
   },
   "dependencies": {
     "@radix-ui/react-slot": "^1.0.0",
+    "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "^2.1.0",
     "lucide-react": "^0.400.0",
     "next": "^15.5.23",
+    "next-auth": "^5.0.0-beta.32",
     "pg": "^8.0.0",
     "pino": "^9.0.0",
     "react": "^19.2.0",
@@ -40,6 +44,7 @@
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^5.2.0",
     "autoprefixer": "^10.4.0",
+    "embedded-postgres": "^18.4.0-beta.17",
     "eslint": "^9.0.0",
     "eslint-config-next": "^15.5.23",
     "jsdom": "^30.0.1",
