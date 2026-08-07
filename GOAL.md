@@ -7,7 +7,7 @@ Launch Mission Control as the live marketing-operations hub for Empyrean (target
 ### M1 — Bootstrap the v1 application
 - [x] Freeze the v1 stack and surface (LAUNCH_CHECKLIST.md §1) — suggested cut: Next.js 15 + TypeScript + Tailwind + shadcn/ui + Postgres/Prisma + Auth.js
 - [x] Add package.json + lockfile and scaffold the app so `npm run dev` boots on :3000
-- [ ] Add a test framework (Vitest) with the first passing tests — audit.sh requires a test suite
+- [x] Add a test framework (Vitest) with the first passing tests — audit.sh requires a test suite
 - [ ] Implement `/api/healthz` and `/api/readyz` (Dockerfile HEALTHCHECK probes /api/healthz)
 - [ ] Complete `.env.example` and the real Dockerfile build steps so the image builds
 - [ ] GitHub Actions CI running Vitest + lint + `npm run build` on every PR — the orchestrator's merge gate
