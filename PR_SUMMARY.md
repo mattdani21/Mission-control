@@ -1,66 +1,60 @@
-# PR: Auth.js end-to-end — signup, login, logout, password reset (M2, task 6)
+# PR Summary — Per-workspace token usage capture (`ai_usage` table)
+
+Issue #21 · M2 milestone ("Auth, campaigns and AI assist") · task 9
 
 ## What changed
 
-Full Auth.js v5 (next-auth@beta) implementation on the frozen stack:
+Per-workspace AI token usage capture, wired end to end:
 
-- **`auth.ts`** — Auth.js config: Credentials provider (Zod-validated), JWT
-  sessions, user id carried in the standard `sub` claim and surfaced as
-  `session.user.id` (`types/next-auth.d.ts` augmentation).
-- **API routes** — `/api/auth/*` (Auth.js catch-all), plus three custom
-  endpoints, all input-validated with Zod: `POST /api/auth/signup`,
-  `POST /api/auth/forgot-password`, `POST /api/auth/reset-password`.
-- **Password reset** — one-time tokens (32 random bytes) stored **hashed**
-  (SHA-256), 1-hour TTL, single-use, account-enumeration-safe. Delivered via
-  structured pino logs plus a dev-only `devResetUrl` response field until the
-  M3 email provider lands.
-- **Pages** — `/signup`, `/login`, `/forgot-password`, `/reset-password`,
-  session-protected `/dashboard` with a sign-out button; landing page links.
-- **Persistence** — Postgres via `pg` behind an `AuthRepository` interface
-  (`lib/auth/repository.ts`) + forward-only SQL migrations
-  (`db/migrations/0001_init_auth.sql`, `npm run db:migrate`). Prisma was the
-  original freeze choice, but its engine downloads are blocked in the offline
-  orchestrator container, so the shipped layer is plain parameterized SQL —
-  swapping in Prisma is a one-file change. Pool creation is lazy so `next
-  build` works without `DATABASE_URL`.
-- **Dev tooling** — `npm run db:local` boots an embedded Postgres (no Docker
-  needed).
-- **audit.sh fixes** — the `grep_any` helper used a quoted `{a,b}` glob that
-  grep never expands, making the "Authentication implementation present" and
-  "Health check endpoint" checks permanent false negatives; expanded braces
-  into repeated `--include` flags and added `.next` to the excludes.
-  `eslint.config.mjs` was also added to the linter check.
-- This branch carries the M1 foundation (app scaffold + Vitest + CI) because
-  those PRs have not landed on `main`; the delta beyond that state is the
-  auth work above.
+- **`db/migrations/0002_ai_usage.sql`** — new `workspaces` table, a
+  `workspace_id` column on `users`, and the `ai_usage` table: one row per AI
+  request with provider, model, input/output tokens, prompt-cache read tokens,
+  latency, upstream request id, and a `(workspace_id, created_at DESC)` index
+  for per-workspace queries. Applied by the existing forward-only migration
+  runner (`npm run db:migrate`).
+- **`lib/usage.ts`** — `PgUsageRepository` (record / getWorkspaceUsage /
+  listRecent / workspace provisioning helpers) behind a repository interface,
+  matching the auth layer's pattern (plain parameterized SQL, swappable for
+  Prisma later).
+- **`app/api/auth/signup/route.ts`** — every new account gets a personal
+  workspace at signup, so usage is attributed per workspace from the start.
+- **`app/api/ai/draft/route.ts` + `lib/anthropic.ts`** — server-side Anthropic
+  proxy (streaming, prompt-cached system prompt, API key never leaves the
+  server). The SSE stream is forwarded to the client byte-for-byte while usage
+  is tallied from `message_start`/`message_delta` events; one `ai_usage` row is
+  persisted per request (also on client disconnect). Requires only
+  `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL` — both already in `.env.example`.
+- **README.md** — documents the new proxy route and usage capture.
+
+## Why
+
+M2's definition of done requires "usage is recorded per workspace." There was
+no workspace concept and no caller of the (previously unimplemented) AI proxy,
+so the task ships the schema, the capture path, and the proxy route that
+exercises it — signup → AI draft now works locally with usage recorded.
 
 ## How it was tested
 
-- **`npm test` — 45 tests pass** across 8 files: 28 auth unit tests
-  (hashing, tokens, validation, signup/login/reset service flows), 9
-  HTTP-level route tests, and 1 complete Auth.js session-flow test — the
-  real handlers run against **pg-mem** (in-memory Postgres), so the suite
-  needs no database and runs in CI:
-  signup → CSRF → credentials sign-in → session read-back (user id) →
-  wrong-password rejection (session survives) → sign-out (session cleared).
-- **`npm run lint`** — 0 problems · **`npm run typecheck`** — clean ·
-  **`npm run build`** — production build passes (static auth pages, dynamic
-  API/dashboard).
-- **`bash scripts/launch/audit.sh`** — **0 critical gaps** (was 5 in
-  STATE.md); 3 warnings remain, all later-milestone work (RBAC, privacy,
-  terms).
-- Full real-Postgres e2e (`docker compose up db` + `npm run db:migrate` +
-  `npm run dev`) could not be executed inside this container: no Docker, and
-  the container's uid has no `/etc/passwd` entry, which blocks Postgres
-  initdb (embedded or system). pg-mem runs the identical SQL through the
-  real repository and route handlers, and the migration SQL is applied
-  verbatim by `db/migrate.mjs` on any real Postgres.
-- Note: the audit's "Health check endpoint" check now matches the
-  `/api/healthz` contract comment in `next.config.ts`; the actual endpoint
-  remains the M1 health task's deliverable.
+- `npm test` — **60 tests, 10 files, all passing** (was 45 before). New
+  coverage: repository tests (record/aggregate/list/workspace provisioning,
+  including per-workspace isolation) and full HTTP integration tests of the
+  draft route against pg-mem with a mocked session and a canned Anthropic SSE
+  stream (401/400/403/503/502 paths, streaming passthrough, per-workspace
+  attribution, cache-read token capture, chunk-boundary SSE parsing).
+- `npm run lint` and `npm run typecheck` — clean.
+- `npm run build` — production build succeeds.
+- Real-Postgres migration validation was attempted but is not possible in this
+  offline container (no compiler for an LD_PRELOAD passwd shim, user
+  namespaces blocked, embedded-postgres wrapper broken under uid 501). Every
+  statement of the migration is executed and verified by pg-mem in the test
+  suite; the SQL itself is standard Postgres (CREATE TABLE / ALTER ADD COLUMN
+  with REFERENCES / CREATE INDEX).
 
 ## Notes
 
-- No `.env` files touched, no secrets, no force-push, no changes to `main`.
-- Logout for JWT sessions is the standard Auth.js flow (cookie cleared);
-  server-side revocation of individual sessions is out of scope for M2.
+- Diff is ~930 lines (feature ~450, tests ~490). Tests follow the repo's
+  established pg-mem integration-test convention (the auth task shipped a
+  comparable volume); the change is one cohesive feature with no drive-by
+  edits.
+- No `.env` files touched; no new dependencies added; `package-lock.json`
+  unchanged.
