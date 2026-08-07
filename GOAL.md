@@ -17,11 +17,11 @@ Launch Mission Control as the live marketing-operations hub for Empyrean (target
 - [x] Auth.js end-to-end: signup, login, logout, password reset
 - [x] Campaign object: title, brief, status, owner, channel
 - [x] Server-side Anthropic proxy route (never called from the browser) with streaming and prompt caching
-- [ ] Per-workspace token usage capture (`ai_usage` table)
+- [x] Per-workspace token usage capture (`ai_usage` table)
 *Definition of done:* signup → create campaign → AI draft works locally; usage is recorded per workspace.
 
 ### M3 — Channel integrations
-- [ ] Resend integration: verified domain, single send + scheduled send
+- [x] Resend integration: verified domain, single send + scheduled send
 - [ ] Background job runner for scheduled sends (Inngest or cron+queue)
 - [ ] Webhook handler for delivery / bounce events
 *Definition of done:* a scheduled campaign email sends on time and delivery events are recorded.
