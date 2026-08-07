@@ -35,7 +35,9 @@ A web app where a marketer can:
   (streaming, prompt caching; never called from the browser). Every request
   records one `ai_usage` row, attributed to the caller's workspace.
 - Resend for transactional + marketing email
-- Inngest for scheduled jobs
+- Scheduled sends — a Postgres-backed queue (`send_schedules`) with a cron+queue
+  runner: `npm run worker` (long-running poller) or `GET /api/cron/send`
+  (cron-triggered tick). No external queue service needed; see "Scheduled sends".
 - Sentry + pino for observability
 - Vercel for hosting
 
@@ -60,6 +62,30 @@ npm run dev
 
 App runs at http://localhost:3000. Auth flows live at `/signup`, `/login`,
 `/forgot-password`, `/reset-password`; `/dashboard` is session-protected.
+
+## Scheduled sends
+
+Scheduled email sends are a cron+queue setup, so they work without an external
+job service:
+
+1. **Enqueue** — `POST /api/sends/schedule` (session-protected) with
+   `{ to, subject, html, scheduledFor }` writes one `pending` row to the
+   `send_schedules` table (`npm run db:migrate` creates it — migration 0003).
+2. **Deliver** — a runner tick claims rows whose `scheduled_for` has arrived
+   and sends them through Resend, then records the outcome back on the row
+   (`sent` + Resend message id, `failed` with retries, or backoff-requeued).
+   Any scheduler drives ticks:
+   - locally / on a VM: `npm run worker` polls the queue (docker-compose runs
+     a `worker` service for you),
+   - serverless: point a cron (Vercel Cron, cron-job.org, …) at
+     `GET /api/cron/send` with the `x-cron-secret` header set to `CRON_SECRET`
+     (the endpoint is otherwise 401; it returns per-tick send counts).
+3. **Watch** — delivery/bounce events will arrive via the webhook handler and
+   update `delivery_status` (M3 roadmap).
+
+For local development without a Resend account, set `RESEND_DEV_MODE=1`: with
+no `RESEND_API_KEY` the runner returns synthetic message ids and the full
+schedule → claim → send flow works offline.
 
 ## Production-readiness workflow
 
