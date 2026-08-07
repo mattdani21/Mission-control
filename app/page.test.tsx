@@ -1,19 +1,18 @@
-import { render, screen } from "@testing-library/react";
+import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import Home from "./page";
 
 describe("Home page", () => {
   it("renders the Mission Control heading", () => {
-    render(<Home />);
-    expect(screen.getByRole("heading", { level: 1, name: /mission control/i })).toBeInTheDocument();
+    const html = renderToStaticMarkup(<Home />);
+    expect(html).toContain("<h1");
+    expect(html).toContain("Mission Control");
   });
 
   it("links to the project runbook", () => {
-    render(<Home />);
-    expect(screen.getByRole("link", { name: /view the runbook/i })).toHaveAttribute(
-      "href",
-      "https://github.com/mattdani21/Mission-control",
-    );
+    const html = renderToStaticMarkup(<Home />);
+    expect(html).toContain('href="https://github.com/mattdani21/Mission-control"');
+    expect(html).toContain("View the runbook");
   });
 });

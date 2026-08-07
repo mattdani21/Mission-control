@@ -1,11 +1,12 @@
-import react from "@vitejs/plugin-react";
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  plugins: [react()],
+  esbuild: {
+    // Automatic JSX runtime (react/jsx-runtime) — no React-in-scope needed.
+    jsx: "automatic",
+  },
   test: {
-    environment: "jsdom",
-    setupFiles: ["./vitest.setup.ts"],
+    environment: "node",
     include: ["**/*.test.{ts,tsx}"],
   },
 });

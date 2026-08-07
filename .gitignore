@@ -21,6 +21,7 @@ coverage/
 *.tsbuildinfo
 .npm
 .npm-cache/
+npm-global/
 .eslintcache
 
 # Python
