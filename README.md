@@ -19,11 +19,17 @@ A web app where a marketer can:
 - send / schedule across email and social,
 - and see what's running, what's drafted, and what's performing.
 
-## Stack (suggested, not yet implemented)
+## Stack
 
 - Next.js 15 + TypeScript + Tailwind + shadcn/ui
-- Postgres (Neon) + Prisma
-- Auth.js (email + Google)
+- Postgres (Neon) + `pg` with forward-only SQL migrations (`npm run db:migrate`).
+  The persistence layer sits behind a repository interface
+  (`lib/auth/repository.ts`); Prisma was the original freeze choice but its
+  engine downloads are blocked in the offline orchestrator container, so the
+  shipped implementation is plain parameterized SQL — swapping in Prisma later
+  is a one-file change.
+- Auth.js v5 — signup, login, logout, password reset (credentials + JWT
+  sessions; one-time hashed reset tokens)
 - Anthropic Claude for AI assist
 - Resend for transactional + marketing email
 - Inngest for scheduled jobs
@@ -35,16 +41,22 @@ A web app where a marketer can:
 ```bash
 cp .env.example .env
 # fill in DATABASE_URL, AUTH_SECRET, ANTHROPIC_API_KEY, RESEND_API_KEY
+# generate a real AUTH_SECRET: openssl rand -base64 32
 
-# with docker
-docker compose up --build
+# 1) database — pick one:
+docker compose up -d db     # Postgres on :5432, or:
+npm run db:local            # embedded Postgres on :5433 (no Docker needed)
 
-# or natively (once package.json exists)
+# 2) apply migrations
+npm run db:migrate
+
+# 3) run the app
 npm install
 npm run dev
 ```
 
-App runs at http://localhost:3000.
+App runs at http://localhost:3000. Auth flows live at `/signup`, `/login`,
+`/forgot-password`, `/reset-password`; `/dashboard` is session-protected.
 
 ## Production-readiness workflow
 
