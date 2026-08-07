@@ -38,11 +38,26 @@ has_any() { compgen -G "$1" >/dev/null; }
 has_dir_nonempty() { [ -d "$1" ] && [ -n "$(ls -A "$1" 2>/dev/null)" ]; }
 grep_any() {
   # Search source-like files, excluding docs, the launch scripts, and reports
-  # (which would otherwise produce false positives).
-  grep -rqE "$1" "${2:-.}" \
-    --include="${3:-*}" \
+  # (which would otherwise produce false positives). The include glob may use
+  # {a,b} braces — grep does not expand those itself, so expand them into
+  # repeated --include flags first.
+  local pattern="${1:-}" dir="${2:-.}" include="${3:-*}"
+  local -a include_flags=()
+  if [[ "$include" == *"{"* ]]; then
+    local body="${include#*{}"
+    body="${body%\}}"
+    while IFS=',' read -ra parts; do
+      for part in "${parts[@]}"; do
+        include_flags+=(--include="*$part")
+      done
+    done <<< "$body"
+  else
+    include_flags+=(--include="$include")
+  fi
+  grep -rqE "$pattern" "$dir" "${include_flags[@]}" \
     --exclude-dir=.git \
     --exclude-dir=node_modules \
+    --exclude-dir=.next \
     --exclude-dir=dist \
     --exclude-dir=docs \
     --exclude-dir=launch \
@@ -110,7 +125,7 @@ check critical "Test suite present" \
   "Add unit + integration tests. Aim for the critical paths first."
 
 check warn "Linter configured" \
-  "has_file .eslintrc.json || has_file .eslintrc.cjs || has_file eslint.config.js || has_file .ruff.toml || has_file ruff.toml || grep -q ruff pyproject.toml 2>/dev/null" \
+  "has_file .eslintrc.json || has_file .eslintrc.cjs || has_file eslint.config.js || has_file eslint.config.mjs || has_file .ruff.toml || has_file ruff.toml || grep -q ruff pyproject.toml 2>/dev/null" \
   "Add a linter for your stack."
 
 check warn "Formatter configured" \
