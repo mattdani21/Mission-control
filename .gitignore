@@ -54,3 +54,6 @@ launch-readiness-report.md
 hardening-report.md
 trivy-*.sarif
 sbom.cdx.json
+
+# Local embedded Postgres data dir
+.pgdata/

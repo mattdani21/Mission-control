@@ -8,14 +8,31 @@
 //   DATABASE_URL=postgresql://mc:mc@localhost:5433/mission_control npm run db:migrate
 //   DATABASE_URL=postgresql://mc:mc@localhost:5433/mission_control npm run dev
 import { rm } from "node:fs/promises";
+import os from "node:os";
 
 import EmbeddedPostgres from "embedded-postgres";
+
+// Some containers run as a uid that has no /etc/passwd entry (e.g. uid 501
+// when the image declares another user). embedded-postgres calls
+// os.userInfo() in its constructor and would crash; synthesize an entry.
+try {
+  os.userInfo();
+} catch {
+  os.userInfo = () => ({
+    uid: process.getuid(),
+    gid: process.getgid(),
+    username: process.env.USER ?? "postgres",
+    homedir: process.env.HOME ?? "/tmp",
+    shell: "/bin/sh",
+  });
+}
 
 const PORT = 5433; // avoid colliding with docker-compose's 5432
 const USER = "mc";
 const PASSWORD = "mc";
 const DATABASE = "mission_control";
-const DATA_DIR = `/tmp/mission-control-pg-${PORT}`;
+// Overridable: the default /tmp dir may be a small tmpfs (e.g. containers).
+const DATA_DIR = process.env.PG_DATA_DIR ?? `/tmp/mission-control-pg-${PORT}`;
 
 const reset = process.argv.includes("--reset");
 if (reset) {
