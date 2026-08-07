@@ -57,3 +57,7 @@ sbom.cdx.json
 
 # Local embedded Postgres data dir
 .pgdata/
+
+# Local tooling / throwaway files
+.npm-tmp/
+.pgpw
