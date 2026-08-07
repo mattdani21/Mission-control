@@ -14,9 +14,9 @@ Launch Mission Control as the live marketing-operations hub for Empyrean (target
 *Definition of done:* `scripts/launch/audit.sh` reports 0 critical gaps and the launch-readiness workflow is green on main.
 
 ### M2 — Auth, campaigns and AI assist
-- [ ] Auth.js end-to-end: signup, login, logout, password reset
-- [ ] Campaign object: title, brief, status, owner, channel
-- [ ] Server-side Anthropic proxy route (never called from the browser) with streaming and prompt caching
+- [x] Auth.js end-to-end: signup, login, logout, password reset
+- [x] Campaign object: title, brief, status, owner, channel
+- [x] Server-side Anthropic proxy route (never called from the browser) with streaming and prompt caching
 - [ ] Per-workspace token usage capture (`ai_usage` table)
 *Definition of done:* signup → create campaign → AI draft works locally; usage is recorded per workspace.
 
