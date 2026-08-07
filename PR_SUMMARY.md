@@ -1,32 +1,59 @@
-# PR: Add a test framework (Vitest) with the first passing tests
+# PR: GitHub Actions CI running Vitest + lint + `npm run build` on every PR
 
 ## What changed
 
-Wires up Vitest as the app's test framework and lands the first passing tests (M1, task 2):
+Adds the orchestrator's merge gate — a dedicated CI workflow for the app
+(M1, task 5), plus the small lint fix required to make it green:
 
-- **`vitest.config.ts`** — Vitest 3 config: `node` environment, `**/*.test.{ts,tsx}` discovery, and esbuild's automatic JSX runtime so `.tsx` tests compile without a React plugin.
-- **`lib/cn.ts`** — the standard shadcn/ui `cn()` class-merge helper (`clsx` + `tailwind-merge`, both already declared deps) that the frozen v1 stack will use for UI components.
-- **`lib/cn.test.ts`** — 5 unit tests: class joining, falsy filtering, Tailwind conflict resolution (last-wins), non-conflicting merge, conditional object syntax.
-- **`app/page.test.tsx`** — 2 component tests for the landing page rendered via `react-dom/server` (`renderToStaticMarkup`): heading and runbook link. No DOM emulation needed, so the suite runs with zero new dependencies.
-- **`package.json`** — `test` (`vitest run`) and `test:watch` scripts (vitest was already declared in the manifest); the manifest is unchanged otherwise, so `package-lock.json` stays in sync and `npm ci` keeps working.
-- **`.gitignore`** — ignore the local `.npm-cache/` / `npm-global/` directories used for installs in this container.
-- **`app/page.tsx`** — one-line Prettier reformat so `npm run format` is clean.
+- **`.github/workflows/ci.yml`** — new `CI` workflow with three parallel jobs,
+  triggered on **every pull request targeting `main`**, on pushes to `main`,
+  and via `workflow_dispatch`:
+  - `test` — `npm ci` then `npm test` (Vitest, 7 tests)
+  - `lint` — `npm ci` then `npm run lint` + `npm run typecheck`
+  - `build` — `npm ci` then `npm run build` (production Next.js build)
+  - Uses `actions/checkout@v7` (repo convention, matches
+    `launch-readiness.yml`), `actions/setup-node@v4` pinned to Node 22
+    (satisfies every `package-lock.json` engine requirement), with npm cache.
+  - `permissions: contents: read` only — minimal privilege, unlike the
+    launch-readiness workflow which needs write scopes for commenting.
+- **`eslint.config.mjs`** — ignore generated output (`.next/**`, `out/**`,
+  `build/**`, `coverage/**`) and the generated `next-env.d.ts`. Without this,
+  `eslint .` fails: 1233 problems in `.next` build artifacts plus a
+  `@typescript-eslint/triple-slash-reference` error on `next-env.d.ts` that
+  would fail the CI lint job on a clean checkout even before any build.
 
-The previous task's scaffold (Next.js 15 + TypeScript + Tailwind, `package.json`, lockfile) was left uncommitted in the working tree; it is included here so the PR is self-contained.
+This branch is based on `orch/10` (the app scaffold + Vitest framework PR,
+#12) so the workflow could be exercised against the real app; this PR's own
+delta on top of that state is the workflow plus the ESLint ignore fix.
 
 ## Why
 
-The audit gate (`scripts/launch/audit.sh:108-110`) flags "Test suite present" as a critical gap — no test framework existed and `npm test` had nothing to run. This PR closes that gap and gives the M4 quality gates (unit tests on auth / AI proxy / channel send) a place to grow.
+The audit gate (`scripts/launch/audit.sh`) requires a test suite, and the M1
+definition of done requires a launch-readiness workflow green on main. Up to
+now the repo had no CI that actually exercised the application: nothing ran
+`npm test`, lint, typecheck, or `npm run build` on PRs, so regressions could
+merge unnoticed. This workflow makes Vitest + lint + build a required part of
+every PR — the merge gate the orchestrator's task describes.
 
 ## How it was tested
 
-- `npm test` — **7 tests pass** (5 unit + 2 component)
-- `eslint .` (project config) on the new/changed files — clean
-- `tsc --noEmit` with the project's compiler options on the new files — clean
-- `prettier --check` — clean (after the `app/page.tsx` reformat)
-- `bash scripts/launch/audit.sh` — "Test suite present" now passes; critical gaps reduced from 2 → 1 (remaining: health endpoint, tracked as the next M1 task)
+All four commands pass in this container (Node 18.20, npm 10, full
+`npm ci` from the committed lockfile — 700 packages):
 
-## Environment notes
+- `npm test` — **7 tests pass** (5 `cn()` unit tests + 2 Home page component tests)
+- `npm run lint` — **0 problems** (was 1233 before the eslint ignore fix)
+- `npm run typecheck` — clean, verified both with and without a pre-existing
+  `.next/` directory (fresh-checkout simulation for CI)
+- `npm run build` — Next.js 15.5.23 production build completes, exit 0
+- `bash scripts/launch/audit.sh` — critical gaps reduced to **1** (health
+  endpoint, which is the next M1 task's deliverable: `/api/healthz` +
+  `/api/readyz`); "CI workflow defined" and "Test suite present" pass.
 
-- This container has a 1.5 GB memory cgroup and a blocked `nodejs.org`; full `npm install` of the dependency tree is OOM-killed by the host, so local verification used `npm 10` (installed locally via `npm i -g npm@10 --prefix npm-global`) and a minimal `--no-save` install of just the test/tooling packages. The committed `package.json` + `package-lock.json` are unchanged and consistent, so `npm ci` on CI (where memory is not constrained) installs the full tree as usual.
-- No `.env` files touched; no secrets; no changes to `main` (work is on `orch/10-...`).
+## Notes
+
+- No `.env` files touched, no secrets, no force-push, no changes to `main`
+  (work is on `orch/15-...`).
+- Two warnings remain that are outside this task's scope: the audit's
+  "Linter configured" check only recognizes `.eslintrc.*` / `eslint.config.js`
+  (not `eslint.config.mjs` — a false negative; the linter IS configured), and
+  "Health check endpoint" is the next M1 task.
