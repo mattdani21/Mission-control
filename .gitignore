@@ -20,6 +20,8 @@ dist/
 coverage/
 *.tsbuildinfo
 .npm
+.npm-cache/
+npm-global/
 .eslintcache
 
 # Python
@@ -52,3 +54,10 @@ launch-readiness-report.md
 hardening-report.md
 trivy-*.sarif
 sbom.cdx.json
+
+# Local embedded Postgres data dir
+.pgdata/
+
+# Local tooling / throwaway files
+.npm-tmp/
+.pgpw
