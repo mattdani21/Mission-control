@@ -1,60 +1,84 @@
-# PR Summary — Per-workspace token usage capture (`ai_usage` table)
+# PR Summary — Background job runner for scheduled sends (cron+queue)
 
-Issue #21 · M2 milestone ("Auth, campaigns and AI assist") · task 9
+Implements #24 · M3 milestone ("Channel integrations") · task 11
 
 ## What changed
 
-Per-workspace AI token usage capture, wired end to end:
+A zero-dependency **cron+queue** scheduled-send runner (the roadmap's
+"Inngest or cron+queue" choice — this repo uses the self-hosted option, so no
+external queue service or account is required):
 
-- **`db/migrations/0002_ai_usage.sql`** — new `workspaces` table, a
-  `workspace_id` column on `users`, and the `ai_usage` table: one row per AI
-  request with provider, model, input/output tokens, prompt-cache read tokens,
-  latency, upstream request id, and a `(workspace_id, created_at DESC)` index
-  for per-workspace queries. Applied by the existing forward-only migration
-  runner (`npm run db:migrate`).
-- **`lib/usage.ts`** — `PgUsageRepository` (record / getWorkspaceUsage /
-  listRecent / workspace provisioning helpers) behind a repository interface,
-  matching the auth layer's pattern (plain parameterized SQL, swappable for
-  Prisma later).
-- **`app/api/auth/signup/route.ts`** — every new account gets a personal
-  workspace at signup, so usage is attributed per workspace from the start.
-- **`app/api/ai/draft/route.ts` + `lib/anthropic.ts`** — server-side Anthropic
-  proxy (streaming, prompt-cached system prompt, API key never leaves the
-  server). The SSE stream is forwarded to the client byte-for-byte while usage
-  is tallied from `message_start`/`message_delta` events; one `ai_usage` row is
-  persisted per request (also on client disconnect). Requires only
-  `ANTHROPIC_API_KEY` / `ANTHROPIC_MODEL` — both already in `.env.example`.
-- **README.md** — documents the new proxy route and usage capture.
+- **`db/migrations/0003_send_schedules.sql`** — the queue: a `send_schedules`
+  table (workspace-attributed, with `pending / sending / sent / failed /
+  cancelled` states, attempt counter + max attempts, exponential retry backoff
+  (`next_attempt_at`), `last_error`, Resend message id, and `delivery_status`
+  for the upcoming webhook task). Applied by the existing `npm run db:migrate`.
+- **`lib/queue/send-queue.ts`** — `PgSendQueueRepository` behind a repository
+  interface (repo convention): `createSchedule`, `claimDue`, `markSent`,
+  `markFailed`, `listForWorkspace`. Claiming is a due-ids SELECT followed by an
+  UPDATE that re-checks `status = 'pending'`, so two concurrent workers cannot
+  double-send (no `FOR UPDATE SKIP LOCKED` needed; safe under READ COMMITTED).
+- **`lib/resend.ts`** — fetch-based Resend HTTP client (`EmailSender`
+  boundary); `RESEND_API_KEY` never leaves the server. `RESEND_DEV_MODE=1`
+  returns synthetic message ids when no key is set, so the whole flow runs
+  offline.
+- **`lib/queue/runner.ts`** — one tick: claim due → send via `EmailSender` →
+  settle (sent / retry-with-backoff / permanent-fail). Retry policy: network
+  errors, 5xx and 429 retry; 4xx validation failures fail permanently.
+- **`app/api/sends/schedule/route.ts`** — session-protected `POST` to enqueue
+  a scheduled send (zod-validated).
+- **`app/api/cron/send/route.ts`** — the "cron" half: any external scheduler
+  (Vercel Cron, cron-job.org, GitHub Actions schedule) hits `GET /api/cron/send`
+  with `x-cron-secret` (constant-time compare; 503 if unset, 401 on mismatch)
+  and one tick runs. Returns `{ claimed, sent, retrying, failed }`.
+- **`scripts/worker.ts` + `npm run worker`** — the long-running poller for
+  docker-compose / VM deploys (poll interval + batch size configurable);
+  `docker-compose.yml` gains a `worker` service.
+- **Docs** — README "Scheduled sends" section, `.env.example`
+  (`CRON_SECRET`, `RESEND_DEV_MODE`, `SEND_QUEUE_POLL_MS`, `SEND_QUEUE_LIMIT`),
+  GOAL.md checkoff. New dev dependency: `tsx` (runs the TS worker; CI's
+  `npm ci` picks it up from the lockfile).
 
 ## Why
 
-M2's definition of done requires "usage is recorded per workspace." There was
-no workspace concept and no caller of the (previously unimplemented) AI proxy,
-so the task ships the schema, the capture path, and the proxy route that
-exercises it — signup → AI draft now works locally with usage recorded.
+M3's definition of done is "a scheduled campaign email sends on time and
+delivery events are recorded." There was no queue, no worker, and no delivery
+recording — the Resend integration task (#22) shipped the env contract only.
+This task provides the queue, the runner (worker + cron trigger), the send
+path, and the recorded delivery outcome (`sent_at`, Resend message id,
+`delivery_status='queued'`); the webhook task (#25) will update
+`delivery_status` from provider events.
 
 ## How it was tested
 
-- `npm test` — **60 tests, 10 files, all passing** (was 45 before). New
-  coverage: repository tests (record/aggregate/list/workspace provisioning,
-  including per-workspace isolation) and full HTTP integration tests of the
-  draft route against pg-mem with a mocked session and a canned Anthropic SSE
-  stream (401/400/403/503/502 paths, streaming passthrough, per-workspace
-  attribution, cache-read token capture, chunk-boundary SSE parsing).
+- `npm test` — **97 tests, 16 files, all passing** (was 60 before). New
+  coverage:
+  - queue repository (11 tests, pg-mem): create/claim in schedule order,
+    future rows excluded, claim limit, no double-claim, retry backoff window,
+    sent settlement, attempt exhaustion, non-retryable failure, per-workspace
+    listing, backoff curve;
+  - runner tick (7 tests, fakes): happy path, per-schedule from-address,
+    retryable vs permanent failures, crash-after-claim handling;
+  - Resend client (7 tests, stubbed fetch): request shape/headers, 4xx/429
+    errors, non-JSON bodies, network failures, dev mode, missing key;
+  - both routes (9 tests): auth/workspace/validation/enqueue for the schedule
+    route; 503/401/200/500 for the cron route;
+  - **pipeline test** (3 tests, real repo SQL + real runner + real client in
+    dev mode): a due scheduled email is claimed, "sent", and the row records
+    the delivery outcome; future sends stay pending; transient failures go
+    back to the queue with the error stored.
 - `npm run lint` and `npm run typecheck` — clean.
 - `npm run build` — production build succeeds.
-- Real-Postgres migration validation was attempted but is not possible in this
-  offline container (no compiler for an LD_PRELOAD passwd shim, user
-  namespaces blocked, embedded-postgres wrapper broken under uid 501). Every
-  statement of the migration is executed and verified by pg-mem in the test
-  suite; the SQL itself is standard Postgres (CREATE TABLE / ALTER ADD COLUMN
-  with REFERENCES / CREATE INDEX).
+- Worker smoke test — `npx tsx scripts/worker.ts` starts, logs via pino, and
+  degrades gracefully when `DATABASE_URL` is absent.
+- Real-Postgres validation is not possible in this offline container (no
+  server binaries / docker); the migration SQL is executed and verified by
+  pg-mem in the suite, per the repo's established convention.
 
 ## Notes
 
-- Diff is ~930 lines (feature ~450, tests ~490). Tests follow the repo's
-  established pg-mem integration-test convention (the auth task shipped a
-  comparable volume); the change is one cohesive feature with no drive-by
-  edits.
-- No `.env` files touched; no new dependencies added; `package-lock.json`
-  unchanged.
+- No `.env` files touched; no secrets added; existing `.env.example` keys
+  unchanged. `package-lock.json` gains only the `tsx` dev dependency.
+- The branch is stacked on `orch/21` (app scaffold + auth + AI proxy + usage),
+  matching the repo's base-on-previous-branch convention; the incremental diff
+  for this task is ~950 lines (feature ~420, tests ~530).

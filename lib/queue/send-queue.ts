@@ -4,7 +4,7 @@ import { getPool } from "../db";
 
 /**
  * Postgres-backed queue for scheduled sends (`send_schedules` table) — the
- * "queue" half of the cron+queue runner (the roadmap's "Inngest or cron+queue"
+ * "queue" half of the cron+queue runner (the roadmap's "inngest or cron+queue"
  * architecture choice; this repo uses the zero-dependency cron+queue option).
  * The worker claims rows whose scheduled_for has arrived, sends them through
  * an EmailSender, and settles them (sent / failed-with-retry / failed-permanent).

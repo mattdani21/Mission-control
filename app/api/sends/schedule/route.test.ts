@@ -2,7 +2,7 @@ import { randomUUID } from "crypto";
 import { readFile } from "node:fs/promises";
 
 import { newDb } from "pg-mem";
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import { POST } from "./route";
 
