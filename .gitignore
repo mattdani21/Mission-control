@@ -20,6 +20,7 @@ dist/
 coverage/
 *.tsbuildinfo
 .npm
+.npm-cache/
 .eslintcache
 
 # Python
