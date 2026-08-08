@@ -6,24 +6,24 @@ Launch Mission Control as the live marketing-operations hub for Empyrean (target
 
 ### M1 — Bootstrap the v1 application
 - [x] Freeze the v1 stack and surface (LAUNCH_CHECKLIST.md §1) — suggested cut: Next.js 15 + TypeScript + Tailwind + shadcn/ui + Postgres/Prisma + Auth.js
-- [ ] Add package.json + lockfile and scaffold the app so `npm run dev` boots on :3000
-- [ ] Add a test framework (Vitest) with the first passing tests — audit.sh requires a test suite
-- [ ] Implement `/api/healthz` and `/api/readyz` (Dockerfile HEALTHCHECK probes /api/healthz)
-- [ ] Complete `.env.example` and the real Dockerfile build steps so the image builds
-- [ ] GitHub Actions CI running Vitest + lint + `npm run build` on every PR — the orchestrator's merge gate
+- [x] Add package.json + lockfile and scaffold the app so `npm run dev` boots on :3000
+- [x] Add a test framework (Vitest) with the first passing tests — audit.sh requires a test suite
+- [x] Implement `/api/healthz` and `/api/readyz` (Dockerfile HEALTHCHECK probes /api/healthz)
+- [x] Complete `.env.example` and the real Dockerfile build steps so the image builds
+- [x] GitHub Actions CI running Vitest + lint + `npm run build` on every PR — the orchestrator's merge gate
 *Definition of done:* `scripts/launch/audit.sh` reports 0 critical gaps and the launch-readiness workflow is green on main.
 
 ### M2 — Auth, campaigns and AI assist
-- [ ] Auth.js end-to-end: signup, login, logout, password reset
-- [ ] Campaign object: title, brief, status, owner, channel
-- [ ] Server-side Anthropic proxy route (never called from the browser) with streaming and prompt caching
-- [ ] Per-workspace token usage capture (`ai_usage` table)
+- [x] Auth.js end-to-end: signup, login, logout, password reset
+- [x] Campaign object: title, brief, status, owner, channel
+- [x] Server-side Anthropic proxy route (never called from the browser) with streaming and prompt caching
+- [x] Per-workspace token usage capture (`ai_usage` table)
 *Definition of done:* signup → create campaign → AI draft works locally; usage is recorded per workspace.
 
 ### M3 — Channel integrations
-- [ ] Resend integration: verified domain, single send + scheduled send
-- [ ] Background job runner for scheduled sends (Inngest or cron+queue)
-- [ ] Webhook handler for delivery / bounce events
+- [x] Resend integration: verified domain, single send + scheduled send
+- [x] Background job runner for scheduled sends (Inngest or cron+queue)
+- [x] Webhook handler for delivery / bounce events
 *Definition of done:* a scheduled campaign email sends on time and delivery events are recorded.
 
 ### M4 — Quality gates
