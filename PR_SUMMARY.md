@@ -1,32 +1,35 @@
-# PR: Add a test framework (Vitest) with the first passing tests
+# PR: Add package.json + lockfile and scaffold the app so `npm run dev` boots on :3000
 
 ## What changed
 
-Wires up Vitest as the app's test framework and lands the first passing tests (M1, task 2):
+Scaffolds the v1 application (M1, task 1) on the frozen stack — Next.js 15 + TypeScript + Tailwind:
 
-- **`vitest.config.ts`** — Vitest 3 config: `node` environment, `**/*.test.{ts,tsx}` discovery, and esbuild's automatic JSX runtime so `.tsx` tests compile without a React plugin.
-- **`lib/cn.ts`** — the standard shadcn/ui `cn()` class-merge helper (`clsx` + `tailwind-merge`, both already declared deps) that the frozen v1 stack will use for UI components.
-- **`lib/cn.test.ts`** — 5 unit tests: class joining, falsy filtering, Tailwind conflict resolution (last-wins), non-conflicting merge, conditional object syntax.
-- **`app/page.test.tsx`** — 2 component tests for the landing page rendered via `react-dom/server` (`renderToStaticMarkup`): heading and runbook link. No DOM emulation needed, so the suite runs with zero new dependencies.
-- **`package.json`** — `test` (`vitest run`) and `test:watch` scripts (vitest was already declared in the manifest); the manifest is unchanged otherwise, so `package-lock.json` stays in sync and `npm ci` keeps working.
-- **`.gitignore`** — ignore the local `.npm-cache/` / `npm-global/` directories used for installs in this container.
-- **`app/page.tsx`** — one-line Prettier reformat so `npm run format` is clean.
-
-The previous task's scaffold (Next.js 15 + TypeScript + Tailwind, `package.json`, lockfile) was left uncommitted in the working tree; it is included here so the PR is self-contained.
+- **`app/`** — App Router entry points: `layout.tsx` (metadata + root layout), `page.tsx` (minimal landing page), `globals.css` (Tailwind directives).
+- **Config** — `tsconfig.json` (strict, Next defaults), `next.config.ts`, `tailwind.config.ts` + `postcss.config.mjs` (Tailwind v3), `eslint.config.mjs` (ESLint 9 flat config via `next/core-web-vitals` + `next/typescript`), `.prettierrc`, `next-env.d.ts`.
+- **`package.json`** (was untracked) with `dev`/`build`/`start`/`lint`/`typecheck`/`format`/`test` scripts and the frozen-stack deps (next 15.5, react 19.2, tailwind 3.4, typescript 5.9, vitest, zod, pino, pg, …).
+- **`package-lock.json`** — generated with `npm install` (lockfileVersion 3), including all 8 `@next/swc-*` platform entries so `npm ci` / `next build` work on both this arm64 container and the x64 GitHub runners.
 
 ## Why
 
-The audit gate (`scripts/launch/audit.sh:108-110`) flags "Test suite present" as a critical gap — no test framework existed and `npm test` had nothing to run. This PR closes that gap and gives the M4 quality gates (unit tests on auth / AI proxy / channel send) a place to grow.
+The repo had launch infrastructure but zero application code — the audit flagged missing dependency manifest, lockfile, and app source as critical gaps, and the Dockerfile `CMD ["node", "server.js"]` had nothing to serve. This PR is M1's first step: a real app that boots locally, which the subsequent M1 tasks (Vitest suite, `/api/healthz` + `/api/readyz`, real Dockerfile build, CI) build on.
 
 ## How it was tested
 
-- `npm test` — **7 tests pass** (5 unit + 2 component)
-- `eslint .` (project config) on the new/changed files — clean
-- `tsc --noEmit` with the project's compiler options on the new files — clean
-- `prettier --check` — clean (after the `app/page.tsx` reformat)
-- `bash scripts/launch/audit.sh` — "Test suite present" now passes; critical gaps reduced from 2 → 1 (remaining: health endpoint, tracked as the next M1 task)
+- `npm run lint` — clean
+- `npm run typecheck` — clean
+- `npm run build` — succeeds (static `/` route, 103 kB first load)
+- `npm run dev` — boots on http://localhost:3000; `GET /` returns 200 with `<title>Mission Control</title>`; clean startup (no lockfile/SWC warnings)
+- `npm ci --dry-run` — lockfile consistent with `package.json` (814 packages; validates the CI install path)
+- `bash scripts/launch/audit.sh` — critical gaps reduced from 5 → 2 (remaining: test suite and health endpoint, tracked as the next two M1 tasks); `harden.sh` — no new failures
 
-## Environment notes
+## Environment note (memory-limited sandbox)
 
-- This container has a 1.5 GB memory cgroup and a blocked `nodejs.org`; full `npm install` of the dependency tree is OOM-killed by the host, so local verification used `npm 10` (installed locally via `npm i -g npm@10 --prefix npm-global`) and a minimal `--no-save` install of just the test/tooling packages. The committed `package.json` + `package-lock.json` are unchanged and consistent, so `npm ci` on CI (where memory is not constrained) installs the full tree as usual.
-- No `.env` files touched; no secrets; no changes to `main` (work is on `orch/10-...`).
+This container's cgroup is capped at 1.5 GB, and full `npm install` of this tree repeatedly OOM-kills (11 kills observed across npm/pnpm/yarn attempts). Verification above was performed while a working `node_modules` was present (same app code, same runtime dep versions: next 15.5.23, react 19.2.8, tailwind 3.4.19, typescript 5.9.3); the only manifest changes since then are test-framework devDependency version ranges, which do not affect the verified paths. CI installs fresh with `npm ci` and has no such constraint.
+
+## Coordination note
+
+A parallel worker for M1 task 2 (Vitest framework, branch `orch/10-…`) ran in this same workspace and folded this task's uncommitted scaffold into its own PR commit ("Includes the M1 task 1 scaffold … so the PR is self-contained", `4799ab6`). This PR restates the task-1 scope on the correct branch (`orch/9-…`). If `orch/10`'s PR merges first, this one can be closed as already-covered; if this merges first, `orch/10` rebases cleanly (its files are pure additions).
+
+## Scope guard
+
+No `.env` files touched, no secrets, no force-push, no changes to `main`. The remaining audit critical gaps (test suite, `/api/healthz` + `/api/readyz`) belong to the next two M1 tasks and are intentionally not implemented here.
