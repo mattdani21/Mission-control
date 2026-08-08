@@ -17,6 +17,7 @@ A web app where a marketer can:
 - brief a campaign once,
 - co-write copy with an AI assistant,
 - send / schedule across email and social,
+- track AI token usage per workspace,
 - and see what's running, what's drafted, and what's performing.
 
 ## Stack
@@ -30,7 +31,9 @@ A web app where a marketer can:
   is a one-file change.
 - Auth.js v5 — signup, login, logout, password reset (credentials + JWT
   sessions; one-time hashed reset tokens)
-- Anthropic Claude for AI assist
+- Anthropic Claude for AI assist — server-side proxy at `POST /api/ai/draft`
+  (streaming, prompt caching; never called from the browser). Every request
+  records one `ai_usage` row, attributed to the caller's workspace.
 - Resend for transactional + marketing email
 - Inngest for scheduled jobs
 - Sentry + pino for observability

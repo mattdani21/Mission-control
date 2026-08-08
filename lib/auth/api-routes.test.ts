@@ -20,11 +20,16 @@ import { hashResetToken } from "./tokens";
 type MemDb = ReturnType<typeof newDb>;
 
 vi.mock("pg", async () => {
-  const sql = await readFile(new URL("../../db/migrations/0001_init_auth.sql", import.meta.url), "utf8");
+  const migrations = [
+    await readFile(new URL("../../db/migrations/0001_init_auth.sql", import.meta.url), "utf8"),
+    await readFile(new URL("../../db/migrations/0002_ai_usage.sql", import.meta.url), "utf8"),
+  ];
   const db = newDb();
-  for (const statement of sql.split(";")) {
-    const trimmed = statement.trim();
-    if (trimmed) await db.public.none(trimmed);
+  for (const sql of migrations) {
+    for (const statement of sql.split(";")) {
+      const trimmed = statement.trim();
+      if (trimmed) await db.public.none(trimmed);
+    }
   }
   (globalThis as unknown as { __pgMemDb: MemDb }).__pgMemDb = db;
   return db.adapters.createPg();
@@ -92,6 +97,18 @@ describe("POST /api/auth/signup (HTTP)", () => {
   it("rejects duplicate signups with 409", async () => {
     const response = await postJson(signupPOST, { email: "ADA@empyrean.com", password: "another-pass-1" });
     expect(response.status).toBe(409);
+  });
+
+  it("creates a personal workspace and attaches the new account to it", async () => {
+    const response = await postJson(signupPOST, { email: "grace@empyrean.com", password: "grace-pass-1", name: "Grace Hopper" });
+    expect(response.status).toBe(201);
+    const { rows } = await pool.query(
+      `SELECT w.name AS "workspaceName"
+       FROM users u JOIN workspaces w ON w.id = u.workspace_id
+       WHERE u.email = $1`,
+      ["grace@empyrean.com"],
+    );
+    expect((rows[0] as { workspaceName: string }).workspaceName).toBe("Grace Hopper's workspace");
   });
 
   it("rejects invalid payloads with 400", async () => {

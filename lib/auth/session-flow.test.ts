@@ -15,11 +15,16 @@ import { authenticateUser } from "./service";
 type MemDb = ReturnType<typeof newDb>;
 
 vi.mock("pg", async () => {
-  const sql = await readFile(new URL("../../db/migrations/0001_init_auth.sql", import.meta.url), "utf8");
+  const migrations = [
+    await readFile(new URL("../../db/migrations/0001_init_auth.sql", import.meta.url), "utf8"),
+    await readFile(new URL("../../db/migrations/0002_ai_usage.sql", import.meta.url), "utf8"),
+  ];
   const db = newDb();
-  for (const statement of sql.split(";")) {
-    const trimmed = statement.trim();
-    if (trimmed) await db.public.none(trimmed);
+  for (const sql of migrations) {
+    for (const statement of sql.split(";")) {
+      const trimmed = statement.trim();
+      if (trimmed) await db.public.none(trimmed);
+    }
   }
   (globalThis as unknown as { __pgMemDb: MemDb }).__pgMemDb = db;
   return db.adapters.createPg();
