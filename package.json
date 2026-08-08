@@ -2,7 +2,7 @@
   "name": "mission-control",
   "version": "0.1.0",
   "private": true,
-  "description": "Mission Control — marketing mission control: a single home base where marketers run AI-assisted and manual marketing work.",
+  "description": "Mission Control \u2014 marketing mission control: a single home base where marketers run AI-assisted and manual marketing work.",
   "license": "MIT",
   "engines": {
     "node": ">=18.18.0"
@@ -50,11 +50,15 @@
     "eslint-config-next": "^15.5.23",
     "jsdom": "^30.0.1",
     "pg-mem": "^3.0.14",
-    "postcss": "^8.4.0",
+    "postcss": "^8.5.26",
     "prettier": "^3.0.0",
     "tailwindcss": "^3.4.0",
     "tsx": "^4.23.11",
     "typescript": "^5.9.0",
     "vitest": "^3.2.0"
+  },
+  "overrides": {
+    "sharp": "^0.35.0",
+    "postcss": "^8.5.26"
   }
 }
