@@ -76,7 +76,7 @@ jobs:
         continue-on-error: true
 
       - name: Dependency vulnerability scan (Trivy fs)
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: "fs"
           scan-ref: "."
@@ -162,7 +162,7 @@ jobs:
 
       - name: Scan built image
         if: github.event_name != 'pull_request'
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           image-ref: ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
           severity: CRITICAL,HIGH
