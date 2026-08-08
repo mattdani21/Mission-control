@@ -76,7 +76,7 @@ jobs:
         continue-on-error: true
 
       - name: Dependency vulnerability scan (Trivy fs)
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
           scan-type: "fs"
           scan-ref: "."
@@ -117,7 +117,7 @@ jobs:
     name: Stage 3 - Package Release
     runs-on: ubuntu-latest
     needs: [audit, harden]
-    if: ${{ !inputs.skip_package }}
+    if: ${{ !inputs.skip_package && github.event_name != 'pull_request' }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -146,8 +146,8 @@ jobs:
           context: .
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
-            ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
-            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/mattdani21/mission-control:${{ steps.version.outputs.version }}
+            ghcr.io/mattdani21/mission-control:latest
           cache-from: type=gha
           cache-to: type=gha,mode=max
           provenance: true
@@ -162,9 +162,9 @@ jobs:
 
       - name: Scan built image
         if: github.event_name != 'pull_request'
-        uses: aquasecurity/trivy-action@0.36.0
+        uses: aquasecurity/trivy-action@v0.36.0
         with:
-          image-ref: ghcr.io/${{ github.repository }}:${{ steps.version.outputs.version }}
+          image-ref: ghcr.io/mattdani21/mission-control:${{ steps.version.outputs.version }}
           severity: CRITICAL,HIGH
           exit-code: "0"
           format: "sarif"
