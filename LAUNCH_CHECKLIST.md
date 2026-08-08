@@ -38,7 +38,7 @@ this. This document is the human checklist for the things a script can't verify.
 - [ ] Webhook handler for delivery / bounce events
 
 ## 5. Quality (Thu)
-- [ ] Unit tests on auth, AI proxy, channel send
+- [x] Unit tests on auth, AI proxy, channel send
 - [ ] Playwright smoke test: signup → create campaign → AI draft → send test email
 - [ ] Lighthouse a11y score ≥ 90 on landing + dashboard
 - [ ] Lint + typecheck pass in CI
