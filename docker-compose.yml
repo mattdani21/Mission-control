@@ -9,6 +9,17 @@ services:
         condition: service_healthy
     restart: unless-stopped
 
+  # Background job runner for scheduled sends: polls the send_schedules queue
+  # and delivers due sends through Resend (same logic as GET /api/cron/send).
+  worker:
+    build: .
+    command: npm run worker
+    env_file: .env
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
   db:
     image: postgres:16.4-alpine
     environment:
