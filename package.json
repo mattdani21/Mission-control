@@ -2,7 +2,7 @@
   "name": "mission-control",
   "version": "0.1.0",
   "private": true,
-  "description": "Mission Control — marketing mission control: a single home base where marketers run AI-assisted and manual marketing work.",
+  "description": "Mission Control \u2014 marketing mission control: a single home base where marketers run AI-assisted and manual marketing work.",
   "license": "MIT",
   "engines": {
     "node": ">=18.18.0"
@@ -32,7 +32,9 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "tailwind-merge": "^3.0.0",
-    "zod": "^4.0.0"
+    "zod": "^4.0.0",
+    "bcryptjs": "^3.0.3",
+    "next-auth": "^5.0.0-beta.32"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.0.0",
@@ -53,6 +55,8 @@
     "prettier": "^3.0.0",
     "tailwindcss": "^3.4.0",
     "typescript": "^5.9.0",
-    "vitest": "^3.2.0"
+    "vitest": "^3.2.0",
+    "embedded-postgres": "^18.4.0-beta.17",
+    "pg-mem": "^3.0.14"
   }
 }
