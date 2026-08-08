@@ -23,7 +23,7 @@ Launch Mission Control as the live marketing-operations hub for Empyrean (target
 ### M3 — Channel integrations
 - [x] Resend integration: verified domain, single send + scheduled send
 - [x] Background job runner for scheduled sends (Inngest or cron+queue)
-- [ ] Webhook handler for delivery / bounce events
+- [x] Webhook handler for delivery / bounce events
 *Definition of done:* a scheduled campaign email sends on time and delivery events are recorded.
 
 ### M4 — Quality gates
