@@ -40,6 +40,27 @@ test("signup → campaign → AI draft → scheduled send", async ({ page }) => 
 
   // The publish queue picked up the entry.
   await expect(page.getByText(/LIVE|✓/, { exact: false }).first()).toBeVisible();
+
+  // ── claim + send path (regression: real Postgres rejects an unused $1 in
+  // the claim UPDATE; pg-mem tolerated it and the UI never schedules due
+  // sends, so only an explicit due-now send + cron tick exercises this) ──
+  const due = new Date(Date.now() - 60_000).toISOString();
+  const scheduled = await page.request.post("/api/sends/schedule", {
+    data: {
+      to: "owner@envogue.example",
+      subject: "Due-now regression send",
+      html: "<p>due now</p>",
+      scheduledFor: due,
+    },
+  });
+  expect(scheduled.ok()).toBeTruthy();
+
+  const tick = await page.request.get("/api/cron/send", {
+    headers: { "x-cron-secret": "e2e-cron-secret-do-not-use-in-prod" },
+  });
+  expect(tick.ok()).toBeTruthy();
+  const result = (await tick.json()) as { claimed: number; sent: number };
+  expect(result.sent).toBe(1);
 });
 
 test("theme toggle persists across reloads", async ({ page }) => {
