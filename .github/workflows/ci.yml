@@ -72,3 +72,37 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+  e2e:
+    name: E2E smoke + a11y (Playwright)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: mc
+          POSTGRES_PASSWORD: mc
+          POSTGRES_DB: mission_control
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U mc -d mission_control"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: E2E smoke + a11y suite
+        run: npm run test:e2e

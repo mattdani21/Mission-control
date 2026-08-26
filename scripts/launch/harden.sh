@@ -91,8 +91,30 @@ if [ -d .github/workflows ]; then
 fi
 
 # ---- Headers / web hardening hints ----
+# NOTE: grep --include does NOT expand {a,b} braces — expand them into
+# repeated --include flags first (same trick as audit.sh's grep_any).
+expand_include() {
+  local include="$1" body="${1#*\{}" part
+  body="${body%\}}"
+  local -a flags=()
+  if [[ "$include" == *"{"* ]]; then
+    while IFS=',' read -ra parts; do
+      for part in "${parts[@]}"; do flags+=(--include="*$part"); done
+    done <<< "$body"
+  else
+    flags+=(--include="$include")
+  fi
+  # Newline-separated (not NUL): bash 3.2 command substitution drops NULs and
+  # would merge the flags into one token. The flags contain no spaces.
+  printf '%s\n' "${flags[@]}"
+}
+
+# bash 3.2 (macOS) has no readarray; the include flags contain no spaces,
+# so plain word-splitting is safe.
+HEADER_INCLUDES=( $(expand_include "*.{js,ts,tsx,jsx,py,go,rs}") )
+EXCLUDES=(--exclude-dir=.git --exclude-dir=node_modules --exclude-dir=.next --exclude-dir=test-results)
 if grep -rqE 'helmet|Content-Security-Policy|Strict-Transport-Security' \
-   --include="*.{js,ts,tsx,jsx,py,go,rs}" . 2>/dev/null; then
+   "${HEADER_INCLUDES[@]}" "${EXCLUDES[@]}" . 2>/dev/null; then
   pass "Security headers configured"
 else
   fail "No security headers detected" "Add helmet (Node) / secure_headers (Py) — HSTS, CSP, X-Frame-Options."
@@ -100,15 +122,16 @@ fi
 
 # ---- Rate limiting ----
 if grep -rqE 'rate.?limit|express-rate-limit|slowapi|throttle' \
-   --include="*.{js,ts,tsx,jsx,py,go,rs}" . 2>/dev/null; then
+   "${HEADER_INCLUDES[@]}" "${EXCLUDES[@]}" . 2>/dev/null; then
   pass "Rate limiting configured"
 else
   fail "No rate limiting detected" "Rate-limit /auth/* and public APIs."
 fi
 
 # ---- CORS ----
-if grep -rqE 'cors' --include="*.{js,ts,tsx,jsx,py,go,rs}" . 2>/dev/null; then
-  if grep -rqE "origin: ?['\"]?\*['\"]?" --include="*.{js,ts,tsx,jsx,py,go,rs}" . 2>/dev/null; then
+# \b boundaries so prose words ("corseted") don't false-positive.
+if grep -rqE '\bcors\b' "${HEADER_INCLUDES[@]}" "${EXCLUDES[@]}" . 2>/dev/null; then
+  if grep -rqE "origin: ?['\"]?\*['\"]?" "${HEADER_INCLUDES[@]}" "${EXCLUDES[@]}" . 2>/dev/null; then
     fail "CORS allows '*'" "Restrict CORS to known frontend origins."
   else
     pass "CORS configured without wildcard"
@@ -116,7 +139,9 @@ if grep -rqE 'cors' --include="*.{js,ts,tsx,jsx,py,go,rs}" . 2>/dev/null; then
 fi
 
 # ---- Input validation ----
-if grep -rqE 'zod|pydantic|joi|valibot|class-validator' --include="*.{js,ts,tsx,jsx,py}" . 2>/dev/null; then
+VALIDATION_INCLUDES=( $(expand_include "*.{js,ts,tsx,jsx,py}") )
+if grep -rqE 'zod|pydantic|joi|valibot|class-validator' \
+   "${VALIDATION_INCLUDES[@]}" "${EXCLUDES[@]}" . 2>/dev/null; then
   pass "Input validation library in use"
 else
   fail "No input validation library detected" "Validate all external input (Zod / Pydantic)."

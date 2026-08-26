@@ -1,20 +1,23 @@
 # Mission Control — production image
-# Multi-stage; runs as non-root; pinned base; includes healthcheck.
-# Replace the build steps once the app stack is chosen.
+# Next.js 15 standalone build; runs as non-root; pinned base; healthchecked.
+# Deploys on Railway via railway.json (Dockerfile builder).
 
 FROM node:26.5-bookworm-slim AS deps
 WORKDIR /app
 COPY package*.json ./
-RUN if [ -f package-lock.json ]; then npm ci --omit=dev; fi
+RUN npm ci
 
-FROM node:26.5-bookworm-slim AS build
+FROM node:26.5-bookworm-slim AS builder
 WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN if [ -f package.json ]; then npm ci && npm run build || true; fi
+RUN npm run build
 
-FROM node:26.5-bookworm-slim AS runtime
+FROM node:26.5-bookworm-slim AS runner
+WORKDIR /app
 ENV NODE_ENV=production \
     PORT=3000 \
+    HOSTNAME=0.0.0.0 \
     NPM_CONFIG_UPDATE_NOTIFIER=false
 
 RUN groupadd --system --gid 1001 app \
@@ -23,9 +26,9 @@ RUN groupadd --system --gid 1001 app \
  && apt-get install -y --no-install-recommends curl tini ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
-COPY --from=deps  --chown=app:app /app/node_modules ./node_modules
-COPY --from=build --chown=app:app /app ./
+COPY --from=builder --chown=app:app /app/.next/standalone ./
+COPY --from=builder --chown=app:app /app/.next/static ./.next/static
+COPY --from=builder --chown=app:app /app/public ./public
 
 USER app
 EXPOSE 3000

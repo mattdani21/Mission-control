@@ -4,26 +4,30 @@ import { z } from "zod";
 
 import { auth } from "../../../../auth";
 import { withUsageCapture } from "../../../../lib/anthropic";
+import { deepSeekRequestBody, toAnthropicSse } from "../../../../lib/deepseek";
 import { PgUsageRepository } from "../../../../lib/usage";
 
 const logger = pino({ level: process.env.LOG_LEVEL ?? "info" });
 
-// POST /api/ai/draft — server-side Anthropic proxy. Never called from the
-// browser directly: the browser only talks to this route, which forwards to
-// the Anthropic Messages API with the API key (kept out of the client) and
-// records per-workspace token usage in the `ai_usage` table.
+// POST /api/ai/draft — server-side LLM proxy. Never called from the browser
+// directly: the browser only talks to this route, which forwards to the
+// DeepSeek (OpenAI-compatible) chat-completions API with the API key kept
+// out of the client, and records per-workspace token usage in `ai_usage`.
 //
-// Streaming: the Anthropic SSE stream is forwarded to the client verbatim;
-// while it passes through, usage is tallied from the message_start /
-// message_delta events and persisted once the stream ends (see lib/anthropic).
+// Streaming: DeepSeek's OpenAI-style chunks are converted to the same
+// Anthropic-shaped SSE events the route always emitted (message_start →
+// content_block_delta… → message_delta → message_stop → [DONE]), so the
+// client contract is unchanged; while it passes through, usage is tallied
+// and persisted once the stream ends (see lib/anthropic.ts + lib/deepseek.ts).
 //
-// Prompt caching: the system prompt is a stable prefix across every request,
-// so it is marked cacheable (cache_control: ephemeral). Repeat calls in the
-// same cache window are billed as cache_read tokens instead of fresh input.
+// Cost: DeepSeek v4-flash via the shared GAPOS_LLM_API_KEY — typically an
+// order of magnitude cheaper than the claude-opus-class model it replaces.
+//
+// Dev mode (LLM_DEV_MODE=1): when no API key is configured the route returns
+// a canned streaming draft instead of calling the network, so the full
+// signup → campaign → AI draft → send flow works offline (mirrors
+// RESEND_DEV_MODE). Never activates when a real key is present.
 
-const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
-const ANTHROPIC_VERSION = "2023-06-01";
-const PROMPT_CACHING_BETA = "prompt-caching-2024-07-31";
 const MAX_TOKENS = 4096;
 
 const SYSTEM_PROMPT = `You are Mission Control, the AI assistant for a marketing
@@ -39,7 +43,37 @@ const draftSchema = z.object({
     .max(20_000, "Prompt is too long (max 20,000 characters)."),
 });
 
-// POST /api/ai/draft — { prompt: string } → streaming draft.
+function llmApiKey(): string | undefined {
+  return process.env.GAPOS_LLM_API_KEY ?? process.env.LLM_API_KEY;
+}
+
+const DEV_SSE = [
+  'event: message_start',
+  'data: {"type":"message_start","message":{"usage":{"input_tokens":24,"output_tokens":1,"cache_read_input_tokens":0}}}',
+  "",
+  'event: content_block_delta',
+  'data: {"type":"content_block_delta","delta":{"type":"text_delta","text":"Draft for Envogue — the corseted column is the matric look of 2027.\\n\\nEarly-bird bookings include complimentary alterations before 30 June. Sizes 34–42."}}',
+  "",
+  'event: message_delta',
+  'data: {"type":"message_delta","usage":{"output_tokens":38}}',
+  "",
+  'event: message_stop',
+  'data: {"type":"message_stop"}',
+  "",
+  "data: [DONE]",
+  "",
+].join("\n");
+
+function devModeStream(): ReadableStream<Uint8Array> {
+  return new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode(DEV_SSE));
+      controller.close();
+    },
+  });
+}
+
+// POST /api/ai/draft — { prompt: string } → streaming draft (SSE).
 export async function POST(request: Request) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -64,59 +98,67 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "No workspace is attached to this account." }, { status: 403 });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
+  const apiKey = llmApiKey();
+  if (!apiKey && process.env.LLM_DEV_MODE !== "1") {
     return NextResponse.json({ error: "The AI assistant is not configured." }, { status: 503 });
   }
 
-  const model = process.env.ANTHROPIC_MODEL ?? "claude-opus-4-7";
+  const model = process.env.DEEPSEEK_MODEL ?? "deepseek-v4-flash";
+  const baseUrl = (process.env.DEEPSEEK_BASE_URL ?? "https://api.deepseek.com").replace(/\/$/, "");
   const startedAt = Date.now();
 
-  let upstream: Response;
-  try {
-    upstream = await fetch(ANTHROPIC_URL, {
-      method: "POST",
-      headers: {
-        "x-api-key": apiKey,
-        "anthropic-version": ANTHROPIC_VERSION,
-        "anthropic-beta": PROMPT_CACHING_BETA,
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        max_tokens: MAX_TOKENS,
-        system: [{ type: "text", text: SYSTEM_PROMPT, cache_control: { type: "ephemeral" } }],
-        messages: [{ role: "user", content: parsed.data.prompt }],
-        stream: true,
-      }),
-    });
-  } catch {
-    return NextResponse.json({ error: "The AI provider could not be reached." }, { status: 502 });
-  }
-
-  if (!upstream.ok || !upstream.body) {
-    const detail = await upstream.text().catch(() => "");
-    logger.warn({ status: upstream.status, detail: detail.slice(0, 300) }, "anthropic upstream error");
-    return NextResponse.json({ error: "The AI provider returned an error." }, { status: 502 });
-  }
-
-  const requestId = upstream.headers.get("request-id");
-  const stream = withUsageCapture(upstream.body, (usage) => {
+  const recordUsage = (inputTokens: number, outputTokens: number, cacheReadTokens: number, requestId: string | null) => {
     void usageRepo
       .record({
         workspaceId,
-        provider: "anthropic",
+        provider: "deepseek",
         model,
-        inputTokens: usage.inputTokens,
-        outputTokens: usage.outputTokens,
-        cacheReadTokens: usage.cacheReadTokens,
+        inputTokens,
+        outputTokens,
+        cacheReadTokens,
         latencyMs: Date.now() - startedAt,
         requestId,
       })
       .catch((err: unknown) => logger.warn({ err }, "failed to record ai_usage row"));
+  };
+
+  let stream: ReadableStream<Uint8Array>;
+  let requestId: string | null = null;
+
+  if (!apiKey) {
+    // Dev mode: canned stream, still exercised through the real capture path.
+    stream = devModeStream();
+    requestId = "dev_mode";
+  } else {
+    let upstream: Response;
+    try {
+      upstream = await fetch(`${baseUrl}/chat/completions`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(deepSeekRequestBody(SYSTEM_PROMPT, parsed.data.prompt, model, MAX_TOKENS)),
+      });
+    } catch {
+      return NextResponse.json({ error: "The AI provider could not be reached." }, { status: 502 });
+    }
+
+    if (!upstream.ok || !upstream.body) {
+      const detail = await upstream.text().catch(() => "");
+      logger.warn({ status: upstream.status, detail: detail.slice(0, 300) }, "deepseek upstream error");
+      return NextResponse.json({ error: "The AI provider returned an error." }, { status: 502 });
+    }
+
+    requestId = upstream.headers.get("request-id") ?? upstream.headers.get("x-request-id");
+    stream = toAnthropicSse(upstream.body);
+  }
+
+  const finalStream = withUsageCapture(stream, (usage) => {
+    recordUsage(usage.inputTokens, usage.outputTokens, usage.cacheReadTokens, requestId);
   });
 
-  return new Response(stream, {
+  return new Response(finalStream, {
     headers: {
       "Content-Type": "text/event-stream",
       "Cache-Control": "no-cache, no-transform",

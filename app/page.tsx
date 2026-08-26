@@ -1,31 +1,67 @@
+import { CalendarRange, Layers, Send, Sparkles } from "lucide-react";
+
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 bg-zinc-950 px-6 text-zinc-100">
-      <h1 className="text-4xl font-bold tracking-tight sm:text-5xl">Mission Control</h1>
-      <p className="max-w-md text-center text-zinc-400">
-        A single home base for marketing operations: brief a campaign once, co-write copy with AI,
-        and send across email and social.
+    <main className="flex min-h-screen flex-col items-center justify-center gap-8 px-6 py-20">
+      <div className="flex items-center gap-3">
+        <div className="flex h-11 w-11 items-center justify-center overflow-hidden rounded-xl bg-white shadow-[0_2px_12px_rgba(154,123,47,0.4)]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/assets/envogue-logo.jpg" alt="Envogue" className="h-full w-full object-contain" />
+        </div>
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">
+            Envogue — Mission Control
+          </h1>
+          <p className="text-sm text-mut">Empyrean Consult · plan the year · capture the market · publish everywhere</p>
+        </div>
+      </div>
+
+      <p className="max-w-xl text-center text-base leading-relaxed text-mut">
+        The pilot marketing-operations hub for the Winter Catalyst: plan capture windows, brief
+        campaigns once, co-write copy with AI, generate hero looks, and schedule sends — with a
+        human approval gate on everything that ships.
       </p>
+
+      <div className="grid w-full max-w-3xl grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { icon: CalendarRange, title: "Capture calendar", sub: "Matric · Durban July · dances" },
+          { icon: Layers, title: "Pipeline", sub: "Concept → Post ready" },
+          { icon: Sparkles, title: "AI copy + images", sub: "DeepSeek · FLUX · Gemini" },
+          { icon: Send, title: "Scheduled sends", sub: "Email queue with webhook events" },
+        ].map((f) => (
+          <div key={f.title} className="mc-card p-4">
+            <f.icon size={16} className="mb-2 text-accent-ink" />
+            <div className="text-[13px] font-semibold text-ink">{f.title}</div>
+            <div className="text-[11px] text-mut">{f.sub}</div>
+          </div>
+        ))}
+      </div>
+
       <div className="flex flex-wrap items-center justify-center gap-3">
         <a
-          href="https://github.com/mattdani21/Mission-control"
-          className="rounded-md border border-zinc-700 px-4 py-2 text-sm text-zinc-300 transition-colors hover:border-zinc-500 hover:text-zinc-100"
+          href="/signup"
+          className="rounded-xl bg-accent px-6 py-2.5 text-sm font-semibold text-[#14100a] shadow-[0_2px_10px_color-mix(in_srgb,var(--accent)_40%,transparent)] transition-all hover:-translate-y-px hover:brightness-110"
         >
-          View the runbook
+          Get started
         </a>
         <a
           href="/login"
-          className="rounded-md border border-zinc-700 px-4 py-2 text-sm text-zinc-300 transition-colors hover:border-zinc-500 hover:text-zinc-100"
+          className="rounded-xl border border-line px-6 py-2.5 text-sm text-mut transition-colors hover:border-dim hover:text-ink"
         >
           Sign in
         </a>
         <a
-          href="/signup"
-          className="rounded-md bg-zinc-100 px-4 py-2 text-sm font-medium text-zinc-900 transition-colors hover:bg-zinc-300"
+          href="https://github.com/mattdani21/Mission-control"
+          className="rounded-xl border border-line px-6 py-2.5 text-sm text-mut transition-colors hover:border-dim hover:text-ink"
         >
-          Get started
+          View the runbook
         </a>
       </div>
+
+      <p className="text-center text-[11px] text-dim">
+        Pilot build for the Envogue owner — Winter Catalyst 2027. Human-in-the-loop: AI drafts, a human approves, only
+        then it posts.
+      </p>
     </main>
   );
 }

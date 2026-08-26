@@ -39,9 +39,9 @@ this. This document is the human checklist for the things a script can't verify.
 
 ## 5. Quality (Thu)
 - [x] Unit tests on auth, AI proxy, channel send
-- [ ] Playwright smoke test: signup → create campaign → AI draft → send test email
-- [ ] Lighthouse a11y score ≥ 90 on landing + dashboard
-- [ ] Lint + typecheck pass in CI
+- [x] Playwright smoke test: signup → create campaign → AI draft → send test email
+- [x] Lighthouse a11y score ≥ 90 on landing + dashboard (axe CI gate: no serious/critical WCAG 2 A/AA violations; manual Lighthouse run in the pilot evidence)
+- [x] Lint + typecheck pass in CI
 
 ## 6. Security & hardening (Thu–Fri morning)
 Automated checks live in `scripts/launch/harden.sh`. Confirm manually:
