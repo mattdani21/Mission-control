@@ -2,18 +2,18 @@
 # Next.js 15 standalone build; runs as non-root; pinned base; healthchecked.
 # Deploys on Railway via railway.json (Dockerfile builder).
 
-FROM node:26.5-bookworm-slim AS deps
+FROM node:26.6-bookworm-slim AS deps
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 
-FROM node:26.5-bookworm-slim AS builder
+FROM node:26.6-bookworm-slim AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npm run build
 
-FROM node:26.5-bookworm-slim AS runner
+FROM node:26.6-bookworm-slim AS runner
 WORKDIR /app
 ENV NODE_ENV=production \
     PORT=3000 \
