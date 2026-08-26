@@ -27,9 +27,9 @@ Launch Mission Control as the live marketing-operations hub for Empyrean (target
 *Definition of done:* a scheduled campaign email sends on time and delivery events are recorded.
 
 ### M4 — Quality gates
-- [ ] Unit tests on auth, AI proxy and channel send
-- [ ] Playwright smoke: signup → create campaign → AI draft → send test email
-- [ ] Lint + typecheck in CI; Lighthouse a11y ≥ 90 on landing + dashboard
+- [x] Unit tests on auth, AI proxy and channel send
+- [x] Playwright smoke: signup → create campaign → AI draft → send test email
+- [x] Lint + typecheck in CI; Lighthouse a11y ≥ 90 on landing + dashboard
 *Definition of done:* LAUNCH_CHECKLIST.md §5 (Quality) fully checked.
 
 ### M5 — Security, hardening and observability

@@ -31,21 +31,31 @@ A web app where a marketer can:
   is a one-file change.
 - Auth.js v5 — signup, login, logout, password reset (credentials + JWT
   sessions; one-time hashed reset tokens)
-- Anthropic Claude for AI assist — server-side proxy at `POST /api/ai/draft`
-  (streaming, prompt caching; never called from the browser). Every request
-  records one `ai_usage` row, attributed to the caller's workspace.
+- DeepSeek v4-flash for AI assist — server-side proxy at `POST /api/ai/draft`
+  (streaming via the shared `GAPOS_LLM_API_KEY`; the OpenAI-style upstream is
+  converted to the same Anthropic-shaped SSE the client always consumed).
+  Every request records one `ai_usage` row, attributed to the caller's
+  workspace. `LLM_DEV_MODE=1` serves a canned stream when no key is set.
+- Image generation — `POST /api/ai/image`: FLUX.1-dev via DeepInfra
+  (`DEEPINFRA_API_KEY`, ~$0.025–0.05/image) with Gemini 2.5 Flash Image
+  (`GOOGLE_API_KEY`) as fallback; returns a data URL to the browser.
 - Resend for transactional + marketing email
 - Scheduled sends — a Postgres-backed queue (`send_schedules`) with a cron+queue
   runner: `npm run worker` (long-running poller) or `GET /api/cron/send`
   (cron-triggered tick). No external queue service needed; see "Scheduled sends".
+- Campaigns — `campaigns` table + `POST/GET /api/campaigns`; the pilot UI's
+  "Send to Draft" persists a real campaign row.
 - Sentry + pino for observability
-- Vercel for hosting
+- Railway for hosting (Dockerfile standalone build + `railway.json`)
 
 ## Local development
 
 ```bash
 cp .env.example .env
-# fill in DATABASE_URL, AUTH_SECRET, ANTHROPIC_API_KEY, RESEND_API_KEY
+# fill in DATABASE_URL, AUTH_SECRET, GAPOS_LLM_API_KEY, RESEND_API_KEY
+# (GAPOS_LLM_API_KEY is the shared DeepSeek key; DEEPINFRA_API_KEY /
+#  GOOGLE_API_KEY enable image generation; LLM_DEV_MODE=1 + RESEND_DEV_MODE=1
+#  run the whole AI/send flow offline without keys)
 # generate a real AUTH_SECRET: openssl rand -base64 32
 
 # 1) database — pick one:
@@ -85,7 +95,18 @@ job service:
 
 For local development without a Resend account, set `RESEND_DEV_MODE=1`: with
 no `RESEND_API_KEY` the runner returns synthetic message ids and the full
-schedule → claim → send flow works offline.
+schedule → claim → send flow works offline. The same trick powers the AI
+route: with `LLM_DEV_MODE=1` and no key, `POST /api/ai/draft` streams a canned
+draft through the real SSE pipeline.
+
+## End-to-end tests
+
+`npm run test:e2e` runs Playwright against a fully offline stack: an embedded
+Postgres (port 5433, all migrations) plus `next dev` with `LLM_DEV_MODE=1` and
+`RESEND_DEV_MODE=1`. The suite covers the M4 smoke (signup → create campaign →
+AI draft → scheduled send) and axe accessibility scans (WCAG 2 A/AA, no
+serious/critical violations) on the landing page and dashboard. Browsers:
+`npx playwright install chromium`.
 
 ## Production-readiness workflow
 
