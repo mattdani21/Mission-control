@@ -13,6 +13,7 @@ export AUTH_SECRET="e2e-secret-do-not-use-in-prod"
 export AUTH_TRUST_HOST="true"
 export RESEND_DEV_MODE="1"
 export LLM_DEV_MODE="1"
+export CRON_SECRET="e2e-cron-secret-do-not-use-in-prod"
 export APP_URL="http://localhost:${PORT}"
 
 node scripts/e2e/test-db.mjs

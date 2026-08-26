@@ -170,9 +170,9 @@ export class PgSendQueueRepository implements SendQueueRepository {
     if (candidates.length === 0) return [];
 
     // Dynamic IN list: ids are server-generated UUIDs, so interpolating the
-    // placeholders is safe — and pg-mem (used in tests) matches `IN ($2, $3, …)`
+    // placeholders is safe — and pg-mem (used in tests) matches `IN ($1, $2, …)`
     // reliably, unlike `= ANY($1)` with an array parameter.
-    const placeholders = candidates.map((_, i) => `$${i + 2}`).join(", ");
+    const placeholders = candidates.map((_, i) => `$${i + 1}`).join(", ");
     const { rows } = await getPool().query<ClaimedRow>(
       `UPDATE send_schedules
        SET status = 'sending', attempts = attempts + 1, updated_at = now()
@@ -180,7 +180,7 @@ export class PgSendQueueRepository implements SendQueueRepository {
        RETURNING id, workspace_id AS "workspaceId",
          recipient_email AS "recipientEmail", subject, body_html AS "bodyHtml",
          from_email AS "fromEmail", scheduled_for AS "scheduledFor", attempts`,
-      [now, ...candidates.map((c) => c.id)],
+      candidates.map((c) => c.id),
     );
     return rows;
   }
