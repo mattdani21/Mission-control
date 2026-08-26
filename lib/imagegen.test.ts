@@ -71,6 +71,28 @@ describe("generateImage", () => {
     expect(result.image).toBe("data:image/jpeg;base64,QUJD");
   });
 
+  it("prefers Gemini when IMAGE_PROVIDER=gemini", async () => {
+    process.env.IMAGE_PROVIDER = "gemini";
+    try {
+      fetchMock
+        .mockResolvedValueOnce(
+          jsonResponse({
+            candidates: [
+              { content: { parts: [{ inlineData: { data: "QUJD", mimeType: "image/png" } }] } },
+            ],
+          }),
+        )
+        .mockResolvedValueOnce(jsonResponse({ images: [{ b64_json: "REVG" }] }));
+
+      const result = await generateImage("nano banana");
+      expect(result.provider).toBe("gemini");
+      expect(result.image).toBe("data:image/png;base64,QUJD");
+      expect(String(fetchMock.mock.calls[0][0])).toContain("gemini-2.5-flash-image");
+    } finally {
+      delete process.env.IMAGE_PROVIDER;
+    }
+  });
+
   it("throws when no provider key is configured", async () => {
     delete process.env.DEEPINFRA_API_KEY;
     delete process.env.GOOGLE_API_KEY;

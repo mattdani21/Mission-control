@@ -17,4 +17,14 @@ export APP_URL="http://localhost:${PORT}"
 
 node scripts/e2e/test-db.mjs
 
-exec npx next dev -p "${PORT}"
+# Boot the production artifact (same path as the Docker image) instead of
+# `next dev`: cold Turbopack compiles + embedded-Postgres binary downloads
+# routinely exceed runner timeouts, and the standalone server starts in
+# seconds. test-db.mjs above skips embedded Postgres when :5433 is already
+# up (CI provides it as a service container), so this stays fully offline.
+npm run build
+cp -r .next/static .next/standalone/.next/
+cp -r public .next/standalone/public
+export HOSTNAME="0.0.0.0"
+
+exec node .next/standalone/server.js

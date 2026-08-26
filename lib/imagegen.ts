@@ -1,8 +1,10 @@
 /**
  * Affordable photorealistic image generation for Mission Control.
  *
- * Primary: FLUX.1-dev via DeepInfra (~$0.025–0.05/image, photorealistic).
- * Fallback: Gemini 2.5 Flash Image ("Nano Banana") via GOOGLE_API_KEY.
+ * Default order: DeepInfra FLUX.1-dev primary, Gemini 2.5 Flash Image
+ * ("Nano Banana") fallback. Set IMAGE_PROVIDER=gemini to make Gemini the
+ * primary (DeepInfra stays as fallback) — the Envogue pilot runs with
+ * Gemini primary (photorealistic, flash-tier affordable, watermark-free).
  * Both keys stay server-side; the browser only talks to our proxy route.
  *
  * The route /api/ai/image returns { image: "<data URL>", provider, model }.
@@ -123,8 +125,10 @@ async function geminiImage(prompt: string, apiKey: string): Promise<GeneratedIma
 }
 
 /**
- * Generate an image: DeepInfra FLUX.1-dev first, Gemini 2.5 Flash Image as
- * fallback. Throws ImageGenError when no provider is configured (503) or all
+ * Generate an image. Provider order follows IMAGE_PROVIDER:
+ *   - "gemini"  → Gemini 2.5 Flash Image first, DeepInfra FLUX fallback
+ *   - unset (or anything else) → DeepInfra FLUX first, Gemini fallback
+ * Throws ImageGenError when no provider is configured (503) or all
  * providers failed (502 details preserved on the error message).
  */
 export async function generateImage(prompt: string): Promise<GeneratedImage> {
@@ -137,20 +141,25 @@ export async function generateImage(prompt: string): Promise<GeneratedImage> {
     );
   }
 
-  let lastError: unknown = null;
-  if (deepinfraKey) {
-    try {
-      return await deepInfraImage(prompt, deepinfraKey);
-    } catch (err) {
-      lastError = err;
-      logger.warn({ err }, "deepinfra image generation failed; trying gemini fallback");
-    }
+  const geminiFirst =
+    (process.env.IMAGE_PROVIDER ?? "").trim().toLowerCase() === "gemini";
+
+  const attempts: Array<() => Promise<GeneratedImage>> = [];
+  if (geminiFirst) {
+    if (googleKey) attempts.push(() => geminiImage(prompt, googleKey!));
+    if (deepinfraKey) attempts.push(() => deepInfraImage(prompt, deepinfraKey!));
+  } else {
+    if (deepinfraKey) attempts.push(() => deepInfraImage(prompt, deepinfraKey!));
+    if (googleKey) attempts.push(() => geminiImage(prompt, googleKey!));
   }
-  if (googleKey) {
+
+  let lastError: unknown = null;
+  for (const attempt of attempts) {
     try {
-      return await geminiImage(prompt, googleKey);
+      return await attempt();
     } catch (err) {
       lastError = err;
+      logger.warn({ err }, "image provider attempt failed; trying next");
     }
   }
   throw new ImageGenError(

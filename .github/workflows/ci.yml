@@ -76,6 +76,20 @@ jobs:
   e2e:
     name: E2E smoke + a11y (Playwright)
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: mc
+          POSTGRES_PASSWORD: mc
+          POSTGRES_DB: mission_control
+        ports:
+          - 5433:5432
+        options: >-
+          --health-cmd "pg_isready -U mc -d mission_control"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     steps:
       - uses: actions/checkout@v7
 
