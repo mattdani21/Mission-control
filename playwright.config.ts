@@ -25,6 +25,6 @@ export default defineConfig({
     command: "bash scripts/e2e/start-stack.sh",
     url: "http://localhost:3100/api/healthz",
     reuseExistingServer: false,
-    timeout: 180_000,
+    timeout: 300_000,
   },
 });
