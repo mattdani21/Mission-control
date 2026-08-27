@@ -10,10 +10,9 @@ const logger = pino({ level: process.env.LOG_LEVEL ?? "info" });
 
 // POST /api/ai/image — server-side image-generation proxy.
 //
-// The browser never talks to DeepInfra/Gemini directly: it calls this route
-// with a prompt and gets back a data URL. Providers are tried in order —
-// FLUX.1-dev via DeepInfra (photorealistic, ~$0.025–0.05/image), then
-// Gemini 2.5 Flash Image (Nano Banana) as fallback. Each request records an
+// The browser never talks to Gemini directly: it calls this route
+// with a prompt and gets back a data URL. Images are generated via
+// Gemini 2.5 Flash Image (Nano Banana). Each request records an
 // `ai_usage` row attributed to the caller's workspace (image requests carry
 // no token counts; the row exists for audit + cost accounting).
 //

@@ -199,7 +199,7 @@ export function Gallery({
             ✦
           </span>
           <span className="text-[11.5px] font-semibold">{generating ? "Generating…" : "Generate new look"}</span>
-          <span className="text-[10px] text-dim">FLUX.1-dev · ~$0.03/img</span>
+          <span className="text-[10px] text-dim">Gemini 2.5 Flash Image · ~$0.04/img</span>
         </button>
       </div>
     </section>

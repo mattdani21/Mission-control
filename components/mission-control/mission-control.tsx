@@ -190,7 +190,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
     }
   }, [schedBusy, composer, recipient]);
 
-  /* ── Generate: FLUX.1-dev via the image proxy ── */
+  /* ── Generate: Gemini 2.5 Flash Image via the image proxy ── */
   const handleGenerate = useCallback(async () => {
     if (genBusy) return;
     const prompt = composer.trim() || "Envogue formalwear editorial look, photorealistic studio photography";
