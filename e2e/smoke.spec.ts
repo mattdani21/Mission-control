@@ -15,9 +15,9 @@ test("signup → campaign → AI draft → scheduled send", async ({ page }) => 
   await page.getByLabel("Password").fill("SmokePass123!");
   await page.getByRole("button", { name: "Create account" }).click();
 
-  // Lands on the Envogue-branded dashboard.
+  // Lands on the dashboard (brand context lives in the company dropdown).
   await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
-  await expect(page.getByRole("heading", { name: /Envogue — Marketing Mission Control/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Marketing Mission Control/ })).toBeVisible();
 
   // ── create campaign (Send to Draft persists a real campaign row) ──
   await page.getByRole("button", { name: "Send to Draft →" }).click();
@@ -25,13 +25,13 @@ test("signup → campaign → AI draft → scheduled send", async ({ page }) => 
 
   // The campaign landed in the pipeline Draft column.
   await expect(
-    page.locator("section[aria-label='AI pipeline']").getByText(/The corseted column is the matric look of 2027/),
+    page.locator("section[aria-label='AI pipeline']").getByText(/The corseted column is the matric look/),
   ).toBeVisible();
 
   // ── AI draft (dev-mode canned stream through the real SSE path) ──
   await page.getByRole("button", { name: /AI-adapt for platform/ }).click();
   await expect(page.getByText(/adapted for 4 platforms ✓/)).toBeVisible({ timeout: 20_000 });
-  await expect(page.locator("textarea").first()).toContainText("Draft for Envogue");
+  await expect(page.getByLabel("Composer")).toContainText("Draft for Envogue");
 
   // ── send test email (scheduled send with synthetic id) ──
   await page.getByLabel("Recipient email for scheduled send").fill("owner@envogue.example");

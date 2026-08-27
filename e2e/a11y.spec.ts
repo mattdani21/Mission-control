@@ -23,7 +23,7 @@ test("dashboard has no serious or critical accessibility violations", async ({ p
   await page.getByLabel("Password").fill("A11yPass123!");
   await page.getByRole("button", { name: "Create account" }).click();
   await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
-  await expect(page.getByRole("heading", { name: /Envogue — Marketing Mission Control/ })).toBeVisible();
+  await expect(page.getByRole("heading", { name: /Marketing Mission Control/ })).toBeVisible();
 
   const results = await new AxeBuilder({ page })
     .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])

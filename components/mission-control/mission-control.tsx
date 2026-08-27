@@ -744,6 +744,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
           </div>
           <textarea
             ref={composerRef}
+            aria-label="Composer"
             className="mc-textarea"
             value={composer}
             onChange={(e) => setComposer(e.target.value)}

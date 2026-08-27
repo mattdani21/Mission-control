@@ -71,5 +71,17 @@ if (await isUp()) {
   console.log(`embedded postgres started on :${PORT}`);
 }
 
+// Deterministic state: CI provides a fresh Postgres service; the local
+// embedded PG persists across runs (/tmp/mission-control-e2e-pg), so wipe
+// the schema before migrations — otherwise leftover due sends from previous
+// runs make the cron-tick assertion (sent === 1) fail with stale rows.
+{
+  const reset = new pg.Client({ host: "127.0.0.1", port: PORT, user: USER, password: PASSWORD, database: DATABASE });
+  await reset.connect();
+  await reset.query("DROP SCHEMA public CASCADE; CREATE SCHEMA public;");
+  await reset.end();
+  console.log("e2e schema wiped");
+}
+
 await runMigrations();
 console.log(`DATABASE_URL=postgresql://${USER}:${PASSWORD}@127.0.0.1:${PORT}/${DATABASE}`);
