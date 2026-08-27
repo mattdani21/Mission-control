@@ -10,7 +10,7 @@ export default function Home() {
         </div>
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-ink sm:text-4xl">
-            Envogue — Mission Control
+            Mission Control
           </h1>
           <p className="text-sm text-mut">Empyrean Consult · plan the year · capture the market · publish everywhere</p>
         </div>

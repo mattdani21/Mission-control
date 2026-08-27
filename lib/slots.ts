@@ -1,18 +1,20 @@
 /**
- * Slot templates — Mission Control as a productized template engine.
+ * Slot templates — Mission Control as a multi-brand template engine.
  *
- * Each slot is one client tier / engagement archetype. The dashboard toggle
- * (BULK · MEDIAN · DECIDER · HIGH TREND) switches the entire context: brand,
- * goals per time scale, capture calendar, pipeline, queue, caption bank and
- * gallery. New clients = drop a new SlotConfig in here (or copy a slot and
+ * Each slot is one BRAND / product the operator wants to market (Envogue,
+ * Empire, Tessera, …). The dashboard toggle switches the entire context:
+ * brand, goals per time scale, capture calendar, pipeline, queue, caption
+ * bank and gallery — same underlying structure for every brand.
+ *
+ * Adding a brand = drop a new SlotConfig in SLOTS (copy an existing slot,
  * swap the data) — no UI changes needed.
  *
  * Seeded from real package data where it exists:
- *   - median:    Envogue × Empyrean Dance Countdown 2026 (live) — the reference
- *   - decider:   Micaelan Jade Empire Flywheel (retained, R4.8M/yr base case)
- *   - bulk:      mini-pilot template (high volume, low touch) — template seed
- *   - high-trend: personal-brand / trend-flag engine — template seed
- * Bulk / high-trend numbers are placeholders to be defined per client.
+ *   - envogue:  Envogue × Empyrean Dance Countdown 2026 (live) — the reference
+ *   - empire:   Micaelan Jade Empire Flywheel (retained, R4.8M/yr base case)
+ *   - tessera:  Tessera AI employees (shinji $24k pilot → $96k/yr; Model Gate;
+ *               deepkimi) — B2B pilot → ARR engine
+ * Tessera goals/pipeline are seeded from known facts; refine per quarter.
  */
 
 import type {
@@ -25,7 +27,7 @@ import type {
   WindowRow,
 } from "./mission-data";
 
-export type SlotId = "bulk" | "median" | "decider" | "high-trend";
+export type SlotId = "envogue" | "empire" | "tessera";
 
 export interface CaptionEntry {
   name: string;
@@ -53,144 +55,11 @@ export interface SlotConfig {
 const GENERIC_PROMPT =
   "Editorial fashion photograph, elegant evening gown, South African model, golden hour on Camps Bay beach, Vogue editorial style, full body, natural relaxed hands with five visible fingers";
 
-/* ─────────────────────────── BULK — mini pilots ─────────────────────────── */
+/* ──────────────────── ENVOGUE — Dance Countdown 2026 ──────────────────── */
 
-const BULK: SlotConfig = {
-  id: "bulk",
-  label: "BULK",
-  brandName: "The Bulk",
-  tagline: "Empyrean · mini pilots · high volume, low touch",
-  composerDefault:
-    "Matric 2026 dance dresses — R500 deposit locks your size. Sizes 34–42. First choice goes to the first to book.",
-  defaultPrompt: GENERIC_PROMPT,
-  timeContext: {
-    year: "Planning horizon · pilot season · single capture window",
-    quarter: "Q4 2026 · pilot sprint · Sep–Nov",
-    month: "Sep 2026 · pilot live",
-    week: "This week · Wk 1 · intake + first drops",
-    day: "Today · booking push",
-  },
-  calHint: {
-    year: "12-month horizon",
-    quarter: "Q4 (Sep–Nov)",
-    month: "Sep — pilot",
-    week: "Wk 1",
-    day: "today",
-  },
-  goals: {
-    year: [
-      { label: "Bookings", value: "60+", sub: "R500 deposits · high volume", tone: "gold" },
-      { label: "Revenue", value: "R90k", sub: "pilot stack · 3 clients", tone: "up" },
-      { label: "Assets", value: "300+", sub: "UGC 70% · AI 30%", tone: "plain" },
-      { label: "Capture windows", value: "1 / 1", sub: "dance season pilot", tone: "up" },
-      { label: "Budget", value: "R12k", sub: "per pilot · zero cold", tone: "am" },
-      { label: "CPA", value: "R250", sub: "target · kill >R750", tone: "up" },
-    ],
-    quarter: [
-      { label: "Pilot target", value: "R22k", sub: "single window", tone: "gold" },
-      { label: "Bookings", value: "15+", sub: "deposits credited", tone: "up" },
-      { label: "Capture focus", value: "Dance season", sub: "matric 2026", tone: "am" },
-      { label: "Assets", value: "80+", sub: "try-on + lookbook", tone: "plain" },
-      { label: "UGC creators", value: "3 nano", sub: "barter + feature", tone: "plain" },
-      { label: "Spend", value: "R3k", sub: "warm retarget only", tone: "up" },
-    ],
-    month: [
-      { label: "Sep: pilot live", value: "LIVE", sub: "bookings open", tone: "gold" },
-      { label: "Bookings", value: "8+", sub: "first deposits", tone: "up" },
-      { label: "Deposit rate", value: "≥1%", sub: "per 100 views", tone: "plain" },
-      { label: "Lookbook drops", value: "2", sub: "hero looks", tone: "plain" },
-      { label: "Retargeting", value: "R1.5k", sub: "warm only", tone: "am" },
-      { label: "Cohort", value: "3 briefed", sub: "try-on format", tone: "plain" },
-    ],
-    week: [
-      { label: "Assets (this wk)", value: "8–10", sub: "phone UGC + AI", tone: "gold" },
-      { label: "Bookings", value: "2–3", sub: "first closes", tone: "up" },
-      { label: "Casting DMs", value: "5 out", sub: "prospect pool", tone: "plain" },
-      { label: "Email blast", value: "1 send", sub: "warm list", tone: "up" },
-      { label: "WA flow", value: "≥60%", sub: "pre-filled booking", tone: "plain" },
-      { label: "Spend", value: "R750", sub: "warm retarget", tone: "am" },
-    ],
-    day: [
-      { label: "Posts today", value: "1", sub: "try-on reel", tone: "gold" },
-      { label: "Reminders", value: "2 auto", sub: "pickup · alteration", tone: "am" },
-      { label: "DM triage", value: "→ high-intent", sub: "reply < 2 hr", tone: "up" },
-      { label: "Pipeline due", value: "2 approvals", sub: "editor gate", tone: "plain" },
-      { label: "Capture status", value: "PILOT LIVE", sub: "dance season", tone: "up" },
-      { label: "Runners", value: "3 live", sub: "content · WA · report", tone: "plain" },
-    ],
-  },
-  windows: [
-    { s: 0, e: 2, label: "DANCE PILOT — matric 2026", brand: "env", kind: "capture" },
-    { s: 3, e: 4, label: "Summer lite — NYE + results", brand: "both", kind: "capture" },
-    { s: 6, e: 7, label: "The Build — assets", brand: "env", kind: "build" },
-    { s: 8, e: 10, label: "Matric 2027 seed", brand: "both", kind: "capture" },
-  ],
-  camps: [
-    { s: 0, e: 2, label: "Pilot: bookings + proof", brand: "env", cls: "camp-env" },
-    { s: 8, e: 10, label: "Matric 2027 seed", brand: "env", cls: "camp-env" },
-    { s: 0, e: 11, label: "Always-on: weekly posts", brand: "brand", cls: "camp-brand" },
-  ],
-  pipe: {
-    Concept: [
-      { title: "Intake offer DM ×5", sub: "prospect pool", tag: "ugc", brand: "env" },
-      { title: "Try-on reel hooks ×3", sub: "hanger → twirl → verdict", tag: "ai", brand: "brand" },
-    ],
-    Draft: [
-      { title: "Booking email", sub: "warm list · single send", tag: "ai", brand: "env" },
-      { title: "Lookbook drop — emerald", sub: "AI · #AIlookbook", tag: "ai", brand: "env" },
-    ],
-    Editor: [
-      { title: "Pilot reel edit", sub: "human edits raw footage", tag: "ugc", brand: "env" },
-    ],
-    Approval: [
-      { title: "Retarget lite — urgency", sub: "R1.5k warm", tag: "ad", brand: "env" },
-    ],
-    "Post ready": [
-      { title: "First pilot post", sub: "scheduled · IG+TikTok", tag: "ai", brand: "env" },
-    ],
-  },
-  queue: [
-    { tm: "09:00", pt: "IG", tx: "Try-on reel — first pilot drop" },
-    { tm: "11:00", pt: "WA", tx: "Pilot broadcast — rail filling" },
-    { tm: "16:00", pt: "MAIL", tx: "Booking email — warm list" },
-  ],
-  captionBank: [
-    { name: "aspiration", text: "The dress you remember walks in first. This one knows her." },
-    { name: "urgency", text: "Book before the best sizes disappear. That's not pressure, that's math." },
-    { name: "rental", text: "Rented, not owned — but the memory is all yours." },
-  ],
-  gallery: [
-    {
-      key: "emerald",
-      img: "/assets/look-emerald.png",
-      badge: "AI · HERO 1",
-      title: "Corseted Column — Emerald",
-      cap: "Pilot hero · lookbook post",
-    },
-    {
-      key: "cd811",
-      img: "/assets/product-ladivine-cd811.jpg",
-      badge: "YOUR INVENTORY",
-      badgeTone: "green",
-      title: "Ladivine CD811 — Black",
-      cap: "On the rail now · rental R2,400",
-    },
-    {
-      key: "a1382",
-      img: "/assets/product-andrea-leo-a1382.jpg",
-      badge: "YOUR INVENTORY",
-      badgeTone: "green",
-      title: "Andrea & Leo A1382 — Blush",
-      cap: "Matric favourite · 2 sizes left",
-    },
-  ],
-};
-
-/* ─────────────────── MEDIAN — Seasonal Catalyst (Envogue) ────────────────── */
-
-const MEDIAN: SlotConfig = {
-  id: "median",
-  label: "MEDIAN",
+const ENVOGUE: SlotConfig = {
+  id: "envogue",
+  label: "ENVOGUE",
   brandName: "Envogue",
   tagline: "Empyrean Consult · plan the year · capture the market · publish everywhere",
   composerDefault:
@@ -383,13 +252,13 @@ const MEDIAN: SlotConfig = {
   ],
 };
 
-/* ─────────────── DECIDER — retained flywheel (Micaelan Jade) ─────────────── */
+/* ──────────────── EMPIRE — Micaelan Jade Empire Flywheel ──────────────── */
 
-const DECIDER: SlotConfig = {
-  id: "decider",
-  label: "DECIDER",
-  brandName: "Micaelan Jade",
-  tagline: "Empyrean · retained flywheel · kicker + equity",
+const EMPIRE: SlotConfig = {
+  id: "empire",
+  label: "EMPIRE",
+  brandName: "Empire",
+  tagline: "Empyrean · Empire Flywheel · Micaelan Jade · kicker + equity",
   composerDefault:
     "Portfolio headline: four ventures, one machine — cash, scorecard, and OpenClaw agents running while the founder sleeps.",
   defaultPrompt: GENERIC_PROMPT,
@@ -580,166 +449,150 @@ const DECIDER: SlotConfig = {
   ],
 };
 
-/* ──────────────── HIGH TREND — personal-brand trend engine ──────────────── */
+/* ─────────────── TESSERA — AI employees (B2B pilot → ARR) ─────────────── */
 
-const HIGH_TREND: SlotConfig = {
-  id: "high-trend",
-  label: "HIGH TREND",
-  brandName: "The High Trend",
-  tagline: "Empyrean · trend engine · personal brand · PR halo",
+const TESSERA: SlotConfig = {
+  id: "tessera",
+  label: "TESSERA",
+  brandName: "Tessera",
+  tagline: "Empyrean · AI employees · bounded tasks · pilot → ARR",
   composerDefault:
-    "Trend authority: the look the feeds will be talking about by spring — editorial-first, PR halo, personal-brand distribution.",
+    "Tessera: an AI employee that owns a bounded task end-to-end. One pilot, one month — if it doesn't earn its payroll, you cut it.",
   defaultPrompt: GENERIC_PROMPT,
   timeContext: {
-    year: "Planning horizon · trend engine · 8 campaigns · PR halo",
-    quarter: "Q2 2027 · trend push · editorial + collabs",
-    month: "May 2027 · editorial build",
-    week: "This week · Wk 20 · drop + PR",
-    day: "Today · trend window",
+    year: "Planning horizon · 2026–27 · pilots → ARR engine",
+    quarter: "Q4 2026 · Sep–Nov · pilot push",
+    month: "Sep 2026 · pilot cycle · shinji + Model Gate",
+    week: "This week · Wk 1 · demos + builds",
+    day: "Today · pipeline",
   },
   calHint: {
     year: "12-month horizon",
-    quarter: "Q2 (Apr–Jun)",
-    month: "May — editorial",
-    week: "Wk 20",
+    quarter: "Q4 (Sep–Nov)",
+    month: "Sep — pilot cycle",
+    week: "Wk 1",
     day: "today",
   },
   goals: {
     year: [
-      { label: "Followers", value: "1M", sub: "personal brand · 30% of bookings", tone: "am" },
-      { label: "Campaigns", value: "8 / yr", sub: "seasonal + PR moments", tone: "gold" },
-      { label: "PR features", value: "12+", sub: "editorial · podcast · radio", tone: "up" },
-      { label: "Assets", value: "1,500+", sub: "AI 60% · UGC 40%", tone: "plain" },
-      { label: "Capture windows", value: "6 / 6", sub: "trend · summer · date · matric'27 · july · gala", tone: "up" },
-      { label: "ROAS (blended)", value: "3.2x", sub: "retargeting only", tone: "up" },
+      { label: "ARR target", value: "R1.2M", sub: "12 pilots → renewals", tone: "gold" },
+      { label: "Pilots live", value: "12", sub: "shinji · model gate · deepkimi", tone: "up" },
+      { label: "Agents deployed", value: "40+", sub: "across client workflows", tone: "plain" },
+      { label: "MRR", value: "R100k", sub: "retained AI employees", tone: "up" },
+      { label: "Renewal rate", value: "80%", sub: "pilot → payroll", tone: "up" },
+      { label: "Pipeline", value: "R600k", sub: "demo → proposal", tone: "am" },
     ],
     quarter: [
-      { label: "Q2 trend push", value: "R1.3M", sub: "editorial + collabs", tone: "gold" },
-      { label: "Reach", value: "250k", sub: "IG + TikTok + press", tone: "up" },
-      { label: "PR features", value: "3", sub: "this quarter", tone: "am" },
-      { label: "Assets", value: "400+", sub: "editorial first", tone: "plain" },
-      { label: "Creators", value: "12 live", sub: "collab roster", tone: "plain" },
-      { label: "Spend", value: "R18k", sub: "warm only", tone: "up" },
+      { label: "Q4 target", value: "R180k", sub: "3 pilots closing", tone: "gold" },
+      { label: "Pilots", value: "3 live", sub: "shinji · model gate · new", tone: "up" },
+      { label: "Focus", value: "Pilot push", sub: "demo → signed SOW", tone: "am" },
+      { label: "Agents", value: "12", sub: "in build + live", tone: "plain" },
+      { label: "Demos", value: "25", sub: "intake → brief", tone: "plain" },
+      { label: "Spend", value: "R0", sub: "build phase · founder time", tone: "up" },
     ],
     month: [
-      { label: "May: editorial build", value: "40+ assets", sub: "zero media spend", tone: "gold" },
-      { label: "Reach target", value: "60k", sub: "organic + PR", tone: "up" },
-      { label: "Collabs", value: "4 briefed", sub: "creator drops", tone: "plain" },
-      { label: "Pins", value: "20+", sub: "trend keywords", tone: "plain" },
-      { label: "Retargeting", value: "pixel warming", sub: "no cold spend", tone: "am" },
-      { label: "Trend scan", value: "weekly", sub: "auto research", tone: "plain" },
+      { label: "Sep: pilot cycle", value: "LIVE", sub: "shinji pilot running", tone: "gold" },
+      { label: "Pilots closing", value: "2", sub: "SOWs this month", tone: "up" },
+      { label: "Demo rate", value: "5/wk", sub: "inbound + outreach", tone: "plain" },
+      { label: "Agents in build", value: "6", sub: "3 tasks each", tone: "plain" },
+      { label: "Renewals due", value: "1", sub: "$24k → $96k/yr path", tone: "up" },
+      { label: "Usage watch", value: "daily", sub: "quality gates on", tone: "am" },
     ],
     week: [
-      { label: "Assets (this wk)", value: "12+", sub: "editorial mix", tone: "gold" },
-      { label: "Reach", value: "15k", sub: "3 reels + pins", tone: "up" },
-      { label: "Collab drop", value: "1", sub: "creator feature", tone: "plain" },
-      { label: "Reels", value: "3", sub: "9:16 · captions on", tone: "up" },
-      { label: "Stories", value: "daily", sub: "BTS + polls", tone: "plain" },
-      { label: "Trend scan", value: "auto", sub: "Fri digest", tone: "am" },
+      { label: "Case assets", value: "3", sub: "proof docs", tone: "gold" },
+      { label: "Demos booked", value: "5", sub: "bounded-task pitch", tone: "up" },
+      { label: "Pilot builds", value: "1", sub: "scoping → build", tone: "plain" },
+      { label: "Agents live", value: "2", sub: "running unattended", tone: "up" },
+      { label: "Usage check", value: "daily", sub: "ledger + gates", tone: "plain" },
+      { label: "Blockers", value: "0", sub: "escalate to founder", tone: "am" },
     ],
     day: [
-      { label: "Posts today", value: "3", sub: "1 reel · 1 editorial · 1 story", tone: "gold" },
-      { label: "Reels", value: "1", sub: "hook in 2s", tone: "up" },
-      { label: "PR pitch", value: "1 out", sub: "editorial list", tone: "am" },
-      { label: "Pipeline due", value: "2 approvals", sub: "editor gate", tone: "plain" },
-      { label: "Capture status", value: "TREND WINDOW", sub: "spring look", tone: "up" },
-      { label: "Agents", value: "8 live", sub: "content · PR · scan", tone: "plain" },
+      { label: "Demos today", value: "1", sub: "bounded task fit", tone: "gold" },
+      { label: "Builds", value: "2", sub: "agent tasks", tone: "up" },
+      { label: "Support", value: "1 ticket", sub: "SLA < 4h", tone: "plain" },
+      { label: "Approvals", value: "2", sub: "founder gate", tone: "plain" },
+      { label: "Status", value: "PILOT WINDOW", sub: "Q4 closes", tone: "up" },
+      { label: "Agents", value: "3 active", sub: "shinji · gate · report", tone: "plain" },
     ],
   },
   windows: [
-    { s: 0, e: 2, label: "TREND DROP — spring look", brand: "both", kind: "capture" },
-    { s: 3, e: 4, label: "Summer editorial", brand: "both", kind: "capture" },
-    { s: 5, e: 5, label: "Valentine's edit", brand: "both", kind: "capture" },
-    { s: 6, e: 7, label: "Build — 2027 collection", brand: "env", kind: "build" },
-    { s: 8, e: 10, label: "Matric 2027 trend set", brand: "both", kind: "capture" },
-    { s: 9, e: 10, label: "Durban July looks-for-less", brand: "both", kind: "capture" },
-    { s: 11, e: 11, label: "Year-end gala edit", brand: "both", kind: "capture" },
+    { s: 0, e: 2, label: "PILOT PUSH — Q4 closes", brand: "env", kind: "capture" },
+    { s: 3, e: 4, label: "Renewal cycle — $24k → $96k", brand: "both", kind: "capture" },
+    { s: 6, e: 7, label: "Build — 2027 offers", brand: "env", kind: "build" },
+    { s: 8, e: 10, label: "ARR sprint", brand: "both", kind: "capture" },
   ],
   camps: [
-    { s: 0, e: 2, label: "Trend drop — spring look", brand: "both", cls: "camp-env" },
-    { s: 3, e: 4, label: "Summer editorial", brand: "env", cls: "camp-env" },
-    { s: 5, e: 5, label: "Date-night edit", brand: "both", cls: "camp-env" },
-    { s: 6, e: 7, label: "Build: 2027 collection", brand: "env", cls: "camp-env" },
-    { s: 8, e: 10, label: "Matric 2027 trend set", brand: "env", cls: "camp-env" },
-    { s: 9, e: 10, label: "July looks-for-less", brand: "both", cls: "camp-env" },
-    { s: 11, e: 11, label: "Gala edit", brand: "both", cls: "camp-env" },
-    { s: 0, e: 11, label: "Always-on: personal brand", brand: "brand", cls: "camp-brand" },
+    { s: 0, e: 2, label: "Pilots: shinji + Model Gate", brand: "env", cls: "camp-env" },
+    { s: 3, e: 4, label: "Renewals + case studies", brand: "env", cls: "camp-env" },
+    { s: 6, e: 7, label: "Build: packaging + pricing", brand: "env", cls: "camp-env" },
+    { s: 8, e: 10, label: "ARR sprint", brand: "both", cls: "camp-env" },
+    { s: 0, e: 11, label: "Always-on: usage + support", brand: "brand", cls: "camp-brand" },
   ],
   pipe: {
     Concept: [
-      { title: "Trend scan → 5 looks", sub: "AI research · weekly", tag: "ai", brand: "both" },
-      { title: "PR pitch list", sub: "12 outlets · editorial", tag: "ai", brand: "brand" },
-      { title: "Reel hooks ×6", sub: "editorial tone", tag: "ai", brand: "brand" },
-      { title: "Collab brief: Tier 1", sub: "creator drop", tag: "ugc", brand: "env" },
+      { title: "Demo request → brief", sub: "5/wk · intake", tag: "ugc", brand: "env" },
+      { title: "Pilot scoping doc", sub: "bounded task · 1 month", tag: "ai", brand: "env" },
+      { title: "Case study — shinji", sub: "$24k pilot → $96k/yr", tag: "ai", brand: "both" },
     ],
     Draft: [
-      { title: "Editorial drop — emerald", sub: "AI lookbook · #AIlookbook", tag: "ai", brand: "env" },
-      { title: "Trend pins ×20", sub: "keyword capture", tag: "ai", brand: "both" },
-      { title: "PR kit", sub: "one-pager + assets", tag: "ai", brand: "brand" },
+      { title: "Model Gate deck", sub: "trust layer · ledger", tag: "ai", brand: "env" },
+      { title: "Pilot SOW v2", sub: "scope + gates", tag: "ai", brand: "env" },
     ],
     Editor: [
-      { title: "Reel edit — creator A", sub: "human gate", tag: "ugc", brand: "env" },
-      { title: "Trend report", sub: "weekly · auto", tag: "auto", brand: "both" },
+      { title: "Demo recording edit", sub: "human gate", tag: "ugc", brand: "env" },
+      { title: "Usage report", sub: "weekly · auto", tag: "auto", brand: "both" },
     ],
     Approval: [
-      { title: "Boost post — hero look", sub: "warm audience", tag: "ad", brand: "env" },
-      { title: "Story takeover", sub: "brand-safe", tag: "ugc", brand: "both" },
+      { title: "Pilot SOW — founder", sub: "sign before build", tag: "ad", brand: "env" },
     ],
     "Post ready": [
-      { title: "Hero editorial post", sub: "scheduled · IG+TikTok+Pin", tag: "ai", brand: "env" },
-      { title: "GRWM reel — creator B", sub: "published", tag: "ugc", brand: "both" },
-      { title: "Trend digest", sub: "auto · Fri", tag: "auto", brand: "both" },
+      { title: "Pilot kickoff post", sub: "LinkedIn + X", tag: "ai", brand: "both" },
+      { title: "Renewal email", sub: "warm list · results first", tag: "auto", brand: "env" },
     ],
   },
   queue: [
-    { tm: "09:00", pt: "IG", tx: "Hero editorial drop — spring look" },
-    { tm: "12:00", pt: "PIN", tx: "Trend pins ×5 — keyword set" },
-    { tm: "15:00", pt: "MAIL", tx: "PR follow-up — editorial list" },
-    { tm: "18:00", pt: "IG", tx: "Story: trend poll" },
+    { tm: "09:00", pt: "MAIL", tx: "Demo follow-up ×2 — bounded task fit" },
+    { tm: "11:00", pt: "WA", tx: "Pilot check-in — shinji indexer" },
+    { tm: "14:00", pt: "X", tx: "Case study: $24k pilot → $96k/yr" },
+    { tm: "17:00", pt: "MAIL", tx: "Renewal nudge — usage proof attached" },
   ],
   captionBank: [
-    { name: "aspiration", text: "There is a version of you that walks into the room first. This dress knows her." },
-    { name: "editorial", text: "The gown is the event before the event." },
-    { name: "trend", text: "Not the dress of the season — the dress that makes the season." },
-    { name: "rental", text: "Rented, not owned — but the memory is all yours." },
+    {
+      name: "trust",
+      text: "An agent that can't show its work shouldn't be allowed to do the work.",
+    },
+    {
+      name: "pilot",
+      text: "One bounded task. One month. If it doesn't earn its payroll, you cut it.",
+    },
+    {
+      name: "renewal",
+      text: "The pilot becomes payroll — because it earns it.",
+    },
   ],
   gallery: [
     {
       key: "emerald",
       img: "/assets/look-emerald.png",
-      badge: "AI · HERO 1",
-      title: "Corseted Column — Emerald",
-      cap: "Trend hero · editorial drop",
+      badge: "ASSET · PLACEHOLDER",
+      title: "Case visual",
+      cap: "swap for shinji/model-gate product visual",
     },
     {
-      key: "champagne",
-      img: "/assets/look-champagne.png",
-      badge: "AI · HERO 4",
-      title: "Liquid Metallic — Champagne",
-      cap: "The money look · reel + takeover",
-    },
-    {
-      key: "burgundy",
-      img: "/assets/look-burgundy.png",
-      badge: "AI · HERO 3",
-      title: "Cape Moment — Burgundy",
-      cap: "The entrance · editorial",
-    },
-    {
-      key: "chocolate",
-      img: "/assets/look-chocolate.png",
-      badge: "AI · HERO 5",
-      title: "Minimalist Slip — Chocolate",
-      cap: "Quiet luxury · carousel",
+      key: "cd811",
+      img: "/assets/product-ladivine-cd811.jpg",
+      badge: "ASSET · PLACEHOLDER",
+      badgeTone: "green",
+      title: "Proof artifact",
+      cap: "swap for ledger / usage screenshot",
     },
   ],
 };
 
 export const SLOTS: Record<SlotId, SlotConfig> = {
-  bulk: BULK,
-  median: MEDIAN,
-  decider: DECIDER,
-  "high-trend": HIGH_TREND,
+  envogue: ENVOGUE,
+  empire: EMPIRE,
+  tessera: TESSERA,
 };
 
 export const SLOT_IDS = Object.keys(SLOTS) as SlotId[];

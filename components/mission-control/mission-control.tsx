@@ -47,9 +47,9 @@ function nowTime(): string {
 
 export default function MissionControl({ userName, userEmail, initialCampaigns }: MissionControlProps) {
   const [slotId, setSlotId] = useState<SlotId>(() => {
-    if (typeof window === "undefined") return "median";
+    if (typeof window === "undefined") return "envogue";
     const saved = window.localStorage.getItem("mc-slot");
-    return saved && (SLOT_IDS as string[]).includes(saved) ? (saved as SlotId) : "median";
+    return saved && (SLOT_IDS as string[]).includes(saved) ? (saved as SlotId) : "envogue";
   });
   const slot = SLOTS[slotId];
   const [scale, setScale] = useState<TimeScale>("year");

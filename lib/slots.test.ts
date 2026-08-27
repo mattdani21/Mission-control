@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest";
 import { SLOTS, SLOT_IDS } from "./slots";
 
 describe("slot templates", () => {
-  it("defines all four slots", () => {
-    expect(SLOT_IDS).toEqual(["bulk", "median", "decider", "high-trend"]);
+  it("defines the brand slots", () => {
+    expect(SLOT_IDS).toEqual(["envogue", "empire", "tessera"]);
   });
 
   it("every slot is fully populated", () => {
@@ -38,14 +38,20 @@ describe("slot templates", () => {
     }
   });
 
-  it("median slot is the live Envogue Dance Countdown reference", () => {
-    expect(SLOTS.median.brandName).toBe("Envogue");
-    expect(SLOTS.median.windows[0]?.label).toContain("DANCE COUNTDOWN");
-    expect(SLOTS.median.goals.year[0]?.value).toBe("150+");
+  it("envogue slot is the live Dance Countdown reference", () => {
+    expect(SLOTS.envogue.brandName).toBe("Envogue");
+    expect(SLOTS.envogue.windows[0]?.label).toContain("DANCE COUNTDOWN");
+    expect(SLOTS.envogue.goals.year[0]?.value).toBe("150+");
   });
 
-  it("decider slot carries the flywheel economics", () => {
-    expect(SLOTS.decider.brandName).toBe("Micaelan Jade");
-    expect(SLOTS.decider.goals.year[0]?.value).toBe("R4.8M");
+  it("empire slot carries the flywheel economics", () => {
+    expect(SLOTS.empire.brandName).toBe("Empire");
+    expect(SLOTS.empire.goals.year[0]?.value).toBe("R4.8M");
+  });
+
+  it("tessera slot carries the AI-employee pilot economics", () => {
+    expect(SLOTS.tessera.brandName).toBe("Tessera");
+    expect(SLOTS.tessera.goals.year[0]?.value).toBe("R1.2M");
+    expect(SLOTS.tessera.pipe.Draft?.some((c) => c.title.includes("Model Gate"))).toBe(true);
   });
 });
