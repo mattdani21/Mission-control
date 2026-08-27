@@ -18,7 +18,8 @@ import {
   type TimeScale,
 } from "../../lib/mission-data";
 import { LogoutButton } from "../logout-button";
-import { createCampaign, generateImage, scheduleSend, streamDraft, tomorrowNineSast } from "./api";
+import { createCampaign, scheduleSend, streamDraft, tomorrowNineSast } from "./api";
+import { GenerateModal } from "./generate-modal";
 import { KpiGrid } from "./kpi-grid";
 import { CaptureCalendar, Gallery, Pipeline, TimeContext } from "./sections";
 
@@ -27,6 +28,9 @@ interface MissionControlProps {
   userEmail: string | null;
   initialCampaigns: Array<{ id: string; title: string; brief: string; channel: string; status: string }>;
 }
+
+const DEFAULT_IMAGE_PROMPT =
+  "Editorial fashion photograph, elegant evening gown, South African model, golden hour on Camps Bay beach, Vogue editorial style, full body, natural relaxed hands with five visible fingers";
 
 function nowTime(): string {
   return new Date().toTimeString().slice(0, 5);
@@ -46,7 +50,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
   const [postState, setPostState] = useState("");
   const [aiBusy, setAiBusy] = useState(false);
   const [schedBusy, setSchedBusy] = useState(false);
-  const [genBusy, setGenBusy] = useState(false);
+  const [generateOpen, setGenerateOpen] = useState(false);
   const [queue, setQueue] = useState<QueueEntry[]>(INITIAL_QUEUE);
   const [pipeline, setPipeline] = useState<Record<string, PipeCard[]>>(() => {
     const draftCards: PipeCard[] = initialCampaigns.map((c) => ({
@@ -190,36 +194,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
     }
   }, [schedBusy, composer, recipient]);
 
-  /* ── Generate: Gemini 2.5 Flash Image via the image proxy ── */
-  const handleGenerate = useCallback(async () => {
-    if (genBusy) return;
-    const prompt = composer.trim() || "Envogue formalwear editorial look, photorealistic studio photography";
-    setGenBusy(true);
-    setPostState("");
-    try {
-      const result = await generateImage(prompt);
-      const item: GalleryItem = {
-        key: `gen-${Date.now()}`,
-        img: result.image,
-        badge: "AI · GENERATED",
-        title: "Generated look",
-        cap: `${result.provider} · ${result.model}`,
-      };
-      setGallery((prev) => [item, ...prev]);
-      setModal({
-        item,
-        caption: prompt,
-        stage: "Draft → Editor",
-        approved: false,
-        posted: false,
-      });
-      setPostState("generated ✓ (human approval gate next)");
-    } catch (err) {
-      setPostState(err instanceof Error ? err.message : "Image generation failed");
-    } finally {
-      setGenBusy(false);
-    }
-  }, [genBusy, composer]);
+  /* ── Generate: opens the Gemini pop-out (prompt → preview → add to gallery) ── */
 
   /* ── Pipeline: click to advance a card ── */
   const handleAdvance = useCallback(
@@ -355,7 +330,12 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
       <CaptureCalendar scale={scale} brand={brand} />
 
       {/* ── gallery ── */}
-      <Gallery items={gallery} onOpen={(item) => setModal({ item, caption: item.cap, stage: "Draft → Editor", approved: false, posted: false })} onGenerate={handleGenerate} generating={genBusy} />
+      <Gallery
+        items={gallery}
+        onOpen={(item) => setModal({ item, caption: item.cap, stage: "Draft → Editor", approved: false, posted: false })}
+        onGenerate={() => setGenerateOpen(true)}
+        generating={false}
+      />
 
       {/* ── pipeline ── */}
       <Pipeline pipeline={pipeline} onAdvance={handleAdvance} />
@@ -450,6 +430,18 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
       <p className="mt-5 text-center text-[11px] text-dim">
         Pilot build — AI copy via DeepSeek v4-flash · images via Gemini 2.5 Flash Image · email via Resend. Human-in-the-loop: AI drafts, a human approves, only then it posts.
       </p>
+
+      {/* ── Gemini generate pop-out ── */}
+      <GenerateModal
+        open={generateOpen}
+        initialPrompt={DEFAULT_IMAGE_PROMPT}
+        onClose={() => setGenerateOpen(false)}
+        onAdd={(item) => {
+          setGenerateOpen(false);
+          setGallery((prev) => [item, ...prev]);
+          setModal({ item, caption: item.cap, stage: "Draft → Editor", approved: false, posted: false });
+        }}
+      />
 
       {/* ── editor modal ── */}
       {modal ? (
