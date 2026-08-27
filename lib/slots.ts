@@ -268,7 +268,8 @@ const TESSERA: SlotConfig = {
   tagline: "Empyrean · AI employees · bounded tasks · pilot → ARR",
   composerDefault:
     "Tessera: an AI employee that owns a bounded task end-to-end. One pilot, one month — if it doesn't earn its payroll, you cut it.",
-  defaultPrompt: GENERIC_PROMPT,
+  defaultPrompt:
+    "Dark-mode SaaS analytics dashboard for an AI agent operations platform, task completion metrics, usage charts, agent status list, modern fintech design, clean typography, crisp screenshot style",
   companyStrat:
     "Pilots → ARR: 12 pilots live this year, 80% renewal, R1.2M ARR. Shinji email-indexer proves the model at $24k pilot → $96k/yr. Model Gate (trust layer) + deepkimi (SLM) are the assets behind every agent. Founder gates every external commitment.",
   brandStrategy:
@@ -386,19 +387,32 @@ const TESSERA: SlotConfig = {
   ],
   gallery: [
     {
-      key: "emerald",
-      img: "/assets/look-emerald.png",
-      badge: "ASSET · PLACEHOLDER",
-      title: "Case visual",
-      cap: "swap for shinji/model-gate product visual",
+      key: "tessera-dashboard",
+      img: "/assets/tessera-dashboard.png",
+      badge: "AI · PRODUCT",
+      title: "Agent Ops Dashboard",
+      cap: "Task completion · usage · revenue",
     },
     {
-      key: "cd811",
-      img: "/assets/product-ladivine-cd811.jpg",
-      badge: "ASSET · PLACEHOLDER",
-      badgeTone: "green",
-      title: "Proof artifact",
-      cap: "swap for ledger / usage screenshot",
+      key: "tessera-indexer",
+      img: "/assets/tessera-indexer.png",
+      badge: "AI · PRODUCT",
+      title: "Shinji — Email Indexer",
+      cap: "inbox → AI → indexed pipeline",
+    },
+    {
+      key: "tessera-gate",
+      img: "/assets/tessera-gate.png",
+      badge: "AI · PRODUCT",
+      title: "Model Gate — Trust Ledger",
+      cap: "verification · audit log · approvals",
+    },
+    {
+      key: "tessera-workflow",
+      img: "/assets/tessera-workflow.png",
+      badge: "AI · PRODUCT",
+      title: "Agent Workflow",
+      cap: "memory · decision · execution nodes",
     },
   ],
 };
