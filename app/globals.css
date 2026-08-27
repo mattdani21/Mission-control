@@ -336,7 +336,8 @@ body {
     border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
   }
 
-  /* Calendar bars */
+  /* Calendar bars — strong enough fills to read as Gantt blocks on any
+     screen (13% alpha washes out to an empty underline on mobile). */
   .bar {
     position: absolute;
     top: 0;
@@ -345,27 +346,27 @@ body {
     display: flex;
     align-items: center;
     padding: 0 9px;
-    font-size: 9.5px;
+    font-size: 9px;
     font-weight: 600;
     white-space: nowrap;
     overflow: hidden;
-    letter-spacing: 0.03em;
+    letter-spacing: 0.04em;
     transition: all 0.3s ease;
   }
   .bar.capture {
-    background: var(--accent-soft);
-    border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+    background: color-mix(in srgb, var(--accent) 26%, transparent);
+    border: 1px solid color-mix(in srgb, var(--accent) 70%, transparent);
     color: var(--accent-ink);
   }
   .bar.camp-env {
-    background: color-mix(in srgb, var(--em) 13%, transparent);
-    border: 1px solid color-mix(in srgb, var(--em) 35%, transparent);
-    color: color-mix(in srgb, var(--em) 65%, var(--ink));
+    background: color-mix(in srgb, var(--em) 24%, transparent);
+    border: 1px solid color-mix(in srgb, var(--em) 60%, transparent);
+    color: color-mix(in srgb, var(--em) 75%, var(--ink));
   }
   .bar.camp-brand {
-    background: color-mix(in srgb, var(--am) 13%, transparent);
-    border: 1px solid color-mix(in srgb, var(--am) 38%, transparent);
-    color: color-mix(in srgb, var(--am) 70%, var(--ink));
+    background: color-mix(in srgb, var(--am) 24%, transparent);
+    border: 1px solid color-mix(in srgb, var(--am) 62%, transparent);
+    color: color-mix(in srgb, var(--am) 80%, var(--ink));
   }
 
   /* Pipeline cards */

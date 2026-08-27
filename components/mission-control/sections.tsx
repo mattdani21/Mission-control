@@ -30,7 +30,7 @@ function CampBar({ row, width }: { row: CampRow; width: number }) {
       <div className="w-full text-left text-[11.5px] font-medium leading-tight text-mut sm:w-[168px] sm:flex-shrink-0 sm:text-right">
         {row.label}
       </div>
-      <div className="relative h-6 flex-1 overflow-hidden rounded-[7px] border border-line-2 bg-surface-2">
+      <div className="relative h-7 flex-1 overflow-hidden rounded-[7px] border border-line-2 bg-surface-2 sm:h-6">
         <div className={`bar ${row.cls}`} style={barStyle(row.s, row.e, width)}>
           {row.label}
         </div>
@@ -48,9 +48,12 @@ export function CaptureCalendar({ scale, brand }: { scale: TimeScale; brand: Bra
 
   return (
     <section className="mc-card mb-[18px] p-6" aria-labelledby="cal-title">
-      <h2 id="cal-title" className="mb-4 flex items-center justify-between text-[13px] font-semibold text-ink">
+      <h2
+        id="cal-title"
+        className="mb-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[13px] font-semibold text-ink"
+      >
         Market capture calendar
-        <span className="text-[11px] font-medium normal-case text-dim">{CAL_HINT[scale]}</span>
+        <span className="whitespace-nowrap text-[11px] font-medium normal-case text-dim">{CAL_HINT[scale]}</span>
       </h2>
       <div>
         {windows.map((w) => (
@@ -58,7 +61,7 @@ export function CaptureCalendar({ scale, brand }: { scale: TimeScale; brand: Bra
             <div className="w-full text-left text-[11.5px] font-medium leading-tight text-mut sm:w-[168px] sm:flex-shrink-0 sm:text-right">
               {w.label}
             </div>
-            <div className="relative h-6 flex-1 overflow-hidden rounded-[7px] border border-line-2 bg-surface-2">
+            <div className="relative h-7 flex-1 overflow-hidden rounded-[7px] border border-line-2 bg-surface-2 sm:h-6">
               <div className="bar capture" style={barStyle(w.s, w.e, width)}>
                 {w.kind === "capture" ? "● CAPTURE" : "◌ build"}
               </div>
