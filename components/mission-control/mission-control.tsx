@@ -12,7 +12,7 @@ import {
   type QueueEntry,
   type TimeScale,
 } from "../../lib/mission-data";
-import { SLOTS, SLOT_IDS, type SlotConfig, type SlotId } from "../../lib/slots";
+import { SLOTS, SLOT_IDS, type ProductSlot, type SlotConfig, type SlotId } from "../../lib/slots";
 import { LogoutButton } from "../logout-button";
 import { createCampaign, scheduleSend, streamDraft, tomorrowNineSast } from "./api";
 import { GenerateModal } from "./generate-modal";
@@ -78,15 +78,63 @@ function portfolioCamps() {
 }
 
 function portfolioPipe(): Record<string, PipeCard[]> {
+  return mergePipes(SLOT_IDS.map((sid) => SLOTS[sid].pipe));
+}
+
+function mergePipes(pipeSets: Array<Record<string, PipeCard[]>>): Record<string, PipeCard[]> {
   const stages = ["Concept", "Draft", "Editor", "Approval", "Post ready"] as const;
   const merged: Record<string, PipeCard[]> = {};
   for (const stage of stages) {
     merged[stage] = unionBy(
-      SLOT_IDS.map((sid) => SLOTS[sid].pipe[stage] ?? []),
+      pipeSets.map((ps) => ps[stage] ?? []),
       (c) => `${c.title}::${c.brand}`,
     );
   }
   return merged;
+}
+
+/** Product view: one headline KPI card per product — no invented sums. */
+function productPortfolioGoals(products: ProductSlot[]): Record<TimeScale, import("../../lib/mission-data").Goal[]> {
+  const cards = products.map((p) => {
+    const headline = p.goals.year[0]!;
+    return { label: p.label, value: headline.value, sub: headline.label, tone: headline.tone };
+  });
+  return { year: cards, quarter: cards, month: cards, week: cards, day: cards };
+}
+
+/** Resolve the active view: company (or ALL), then product-level data when
+ *  the company carries products (selected product, or merged ALL PRODUCTS). */
+function resolveView(pick: ActiveSlot, productId: string): SlotConfig {
+  const base = makeView(pick);
+  const company = pick !== "all" ? SLOTS[pick] : null;
+  const products = company?.products ?? [];
+  if (!products.length) return base;
+  if (productId === "all") {
+    return {
+      ...base,
+      goals: productPortfolioGoals(products),
+      windows: unionBy(products.map((p) => p.windows), (w) => w.label),
+      camps: unionBy(products.map((p) => p.camps), (c) => c.label),
+      pipe: mergePipes(products.map((p) => p.pipe)),
+      queue: unionBy(products.map((p) => p.queue), (q) => `${q.tm}::${q.pt}::${q.tx}`),
+      captionBank: products[0]?.captionBank ?? base.captionBank,
+      gallery: unionBy(products.map((p) => p.gallery), (g) => g.key),
+    };
+  }
+  const product = products.find((p) => p.id === productId) ?? products[0]!;
+  return {
+    ...base,
+    tagline: product.tagline,
+    composerDefault: product.composerDefault,
+    defaultPrompt: product.defaultPrompt,
+    goals: product.goals,
+    windows: product.windows,
+    camps: product.camps,
+    pipe: product.pipe,
+    queue: product.queue,
+    captionBank: product.captionBank,
+    gallery: product.gallery,
+  };
 }
 
 /** Resolve the active view: a brand's full platform, or the merged ALL view. */
@@ -129,8 +177,16 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
   });
   const [slotMenuOpen, setSlotMenuOpen] = useState(false);
   const isAll = activeSlot === "all";
+  const companyConfig = !isAll ? SLOTS[activeSlot] : null;
+  const hasProducts = !!companyConfig?.products?.length;
 
-  const view: SlotConfig = useMemo(() => makeView(activeSlot), [activeSlot]);
+  const [productId, setProductId] = useState<string>(() => {
+    if (typeof window === "undefined") return "all";
+    const co = window.localStorage.getItem("mc-slot") ?? "envogue";
+    return window.localStorage.getItem(`mc-product-${co}`) ?? "all";
+  });
+
+  const view: SlotConfig = useMemo(() => resolveView(activeSlot, productId), [activeSlot, productId]);
 
   const [scale, setScale] = useState<TimeScale>("year");
   const [brand, setBrand] = useState<BrandFilter>("all");
@@ -179,15 +235,28 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
     window.localStorage.setItem("mc-slot", pick);
     setActiveSlot(pick);
     setSlotMenuOpen(false);
+    const storedProduct = window.localStorage.getItem(`mc-product-${pick}`) ?? "all";
+    setProductId(storedProduct);
     setScale("year");
     setBrand("all");
     setModal(null);
     setGenerateOpen(false);
-    const next = makeView(pick);
+    const next = resolveView(pick, storedProduct);
     setComposer(next.composerDefault);
     setQueue(next.queue);
     setGallery(next.gallery);
     setPipeline(buildPipeline(next, initialCampaigns));
+    setPostState("");
+  };
+
+  const switchProduct = (pid: string) => {
+    if (pid === productId) return;
+    window.localStorage.setItem(`mc-product-${activeSlot}`, pid);
+    setProductId(pid);
+    setScale("year");
+    setBrand("all");
+    setModal(null);
+    setGenerateOpen(false);
     setPostState("");
   };
 
@@ -433,17 +502,39 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
                   </div>
                 ) : null}
               </div>
-              <div className="seg" role="group" aria-label="Brand filter">
-                <button type="button" className={brand === "all" ? "on" : ""} onClick={() => setBrand("all")}>
-                  ALL
-                </button>
-                <button type="button" className={brand === "env" ? "on" : ""} onClick={() => setBrand("env")}>
-                  CLIENT
-                </button>
-                <button type="button" className={brand === "brand" ? "on" : ""} onClick={() => setBrand("brand")}>
-                  PERSONAL
-                </button>
-              </div>
+              {hasProducts ? (
+                <div className="seg max-w-full overflow-x-auto" role="group" aria-label="Product">
+                  <button
+                    type="button"
+                    className={productId === "all" ? "on" : ""}
+                    onClick={() => switchProduct("all")}
+                  >
+                    ALL PRODUCTS
+                  </button>
+                  {companyConfig!.products!.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      className={productId === p.id ? "on" : ""}
+                      onClick={() => switchProduct(p.id)}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="seg" role="group" aria-label="Brand filter">
+                  <button type="button" className={brand === "all" ? "on" : ""} onClick={() => setBrand("all")}>
+                    ALL
+                  </button>
+                  <button type="button" className={brand === "env" ? "on" : ""} onClick={() => setBrand("env")}>
+                    CLIENT
+                  </button>
+                  <button type="button" className={brand === "brand" ? "on" : ""} onClick={() => setBrand("brand")}>
+                    PERSONAL
+                  </button>
+                </div>
+              )}
               <div className="flex flex-wrap items-center gap-[5px]" aria-hidden>
                 <span className="plat"><i className="ig" />IG</span>
                 <span className="plat"><i className="tk" />TikTok</span>
@@ -497,7 +588,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
       {/* ── capture calendar ── */}
       <CaptureCalendar
         scale={scale}
-        brand={brand}
+        brand={hasProducts ? "all" : brand}
         windows={view.windows}
         camps={view.camps}
         calHint={view.calHint[scale]}

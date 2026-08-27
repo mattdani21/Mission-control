@@ -4,7 +4,7 @@ import { SLOTS, SLOT_IDS } from "./slots";
 
 describe("slot templates", () => {
   it("defines the brand slots", () => {
-    expect(SLOT_IDS).toEqual(["envogue", "tessera"]);
+    expect(SLOT_IDS).toEqual(["envogue", "tessera", "decile", "itrain", "gapos"]);
   });
 
   it("every slot is fully populated", () => {
@@ -52,5 +52,30 @@ describe("slot templates", () => {
     expect(SLOTS.tessera.brandName).toBe("Tessera");
     expect(SLOTS.tessera.goals.year[0]?.value).toBe("R1.2M");
     expect(SLOTS.tessera.pipe.Draft?.some((c) => c.title.includes("Model Gate"))).toBe(true);
+  });
+
+  it("tessera exposes its three products, each fully populated", () => {
+    const products = SLOTS.tessera.products;
+    expect(products?.map((p) => p.id)).toEqual(["shinji", "model-gate", "deepkimi"]);
+    for (const p of products ?? []) {
+      expect(p.goals.year.length).toBeGreaterThanOrEqual(4);
+      expect(p.windows.length).toBeGreaterThan(0);
+      expect(p.camps.length).toBeGreaterThan(0);
+      expect(p.queue.length).toBeGreaterThan(0);
+      expect(p.captionBank.length).toBeGreaterThan(0);
+      expect(p.gallery.length).toBeGreaterThan(0);
+      for (const stage of ["Concept", "Draft", "Editor", "Approval", "Post ready"]) {
+        expect(p.pipe[stage]?.length ?? 0).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("decile / itrain / gapos slots are seeded", () => {
+    expect(SLOTS.decile.brandName).toBe("Decile AI");
+    expect(SLOTS.decile.goals.year[0]?.value).toBe("R1.8M");
+    expect(SLOTS.itrain.brandName).toBe("iTrain");
+    expect(SLOTS.itrain.goals.year[0]?.value).toBe("5,000");
+    expect(SLOTS.gapos.brandName).toBe("GapOS");
+    expect(SLOTS.gapos.goals.year[0]?.value).toBe("30");
   });
 });
