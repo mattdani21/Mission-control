@@ -86,6 +86,15 @@ describe("visionQaImage", () => {
     expect(verdict.passed).toBe(false);
     expect(verdict.reason).toContain("FAIL");
   });
+
+  it("honors the IMAGE_QA_MODEL env override for the QA gate model", async () => {
+    process.env.IMAGE_QA_MODEL = "gemini-4-flash-image";
+    fetchMock.mockResolvedValueOnce(qaPassResponse("PASS, override model"));
+    await visionQaImage("data:image/png;base64,QUJD", "k");
+    const [url] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(String(url)).toContain("gemini-4-flash-image:generateContent");
+    delete process.env.IMAGE_QA_MODEL;
+  });
 });
 
 describe("generateHeroImage", () => {

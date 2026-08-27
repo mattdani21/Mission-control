@@ -37,9 +37,14 @@ export class ImageGenError extends Error {
 
 const GEMINI_IMAGE_MODEL = "gemini-2.5-flash-image";
 const HERO_IMAGE_MODEL = "gemini-3-pro-image";
-// gemini-2.5-flash is retired for this key; the QA gate uses
-// gemini-3.5-flash (verified working). Override via IMAGE_QA_MODEL.
-const QA_VISION_MODEL = "gemini-3.5-flash";
+// gemini-2.5-flash is retired for this key; the QA gate defaults to
+// gemini-3.5-flash (verified working). Override via the IMAGE_QA_MODEL
+// env var (documented in .env.example); read lazily so tests and config
+// changes take effect per call.
+const DEFAULT_QA_VISION_MODEL = "gemini-3.5-flash";
+function qaVisionModel(): string {
+  return process.env.IMAGE_QA_MODEL ?? DEFAULT_QA_VISION_MODEL;
+}
 const GEMINI_GENERATE_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/";
 const MAX_HERO_QA_ATTEMPTS = 3;
@@ -149,7 +154,7 @@ export async function visionQaImage(dataUrl: string, apiKey: string): Promise<Qa
     "no extra digits, and the image looks like a clean editorial fashion photograph. " +
     "Reply with exactly: PASS or FAIL, then one short reason.";
 
-  const response = await fetch(geminiGenerateUrl(QA_VISION_MODEL, apiKey), {
+  const response = await fetch(geminiGenerateUrl(qaVisionModel(), apiKey), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
