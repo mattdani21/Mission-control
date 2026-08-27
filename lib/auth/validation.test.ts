@@ -30,6 +30,16 @@ describe("auth validation schemas", () => {
     }
   });
 
+  it("signup strips markup and control chars from name", () => {
+    const result = signupSchema.safeParse({
+      email: "xss@empyrean.co.za",
+      name: "<script>alert(1)</script>\u0000Gary",
+      password: "Valid1pass",
+    });
+    expect(result.success).toBe(true);
+    if (result.success) expect(result.data.name).toBe("scriptalert(1)/scriptGary");
+  });
+
   it("rejects a malformed signup email", () => {
     const result = signupSchema.safeParse({ email: "not-an-email", password: "hunter2-s3cret" });
     expect(result.success).toBe(false);

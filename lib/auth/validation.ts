@@ -20,6 +20,10 @@ export const signupSchema = z.object({
     .string()
     .trim()
     .max(100, "Name must be at most 100 characters.")
+    // Strip angle brackets + control chars — a raw <script> name was accepted
+    // by signup (stored-XSS hygiene; React's escaping contains it in the UI,
+    // but the data layer should never store markup).
+    .transform((n) => n.replace(/[<>]/g, "").replace(/[\u0000-\u001f\u007f]/g, ""))
     .optional(),
   password: passwordSchema,
 });
