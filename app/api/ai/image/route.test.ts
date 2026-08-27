@@ -92,6 +92,23 @@ function mockGeminiSuccess(): void {
   );
 }
 
+function mockHeroSuccess(): void {
+  // gemini-3-pro-image generation → vision-QA PASS.
+  fetchMock
+    .mockResolvedValueOnce(
+      jsonResponse({
+        candidates: [
+          { content: { parts: [{ inlineData: { data: "QUJD", mimeType: "image/png" } }] } },
+        ],
+      }),
+    )
+    .mockResolvedValueOnce(
+      jsonResponse({
+        candidates: [{ content: { parts: [{ text: "PASS, hands correct" }] } }],
+      }),
+    );
+}
+
 describe("POST /api/ai/image", () => {
   it("rejects unauthenticated requests with 401", async () => {
     mockAuth.mockResolvedValue(null);
@@ -149,5 +166,65 @@ describe("POST /api/ai/image", () => {
 
     const response = await postJson({ prompt: "Burgundy cape moment" });
     expect(response.status).toBe(502);
+  });
+
+  it("routes hero:true to gemini-3-pro-image with the QA gate and returns the qa verdict", async () => {
+    const { userId, workspaceId } = await createUserWithWorkspace("hero@empyrean.com");
+    mockAuth.mockResolvedValue({ user: { id: userId } });
+    mockHeroSuccess();
+
+    const response = await postJson({ prompt: "Corseted Column Emerald", hero: true });
+    expect(response.status).toBe(200);
+    const body = (await response.json()) as {
+      image: string;
+      provider: string;
+      model: string;
+      qa?: { passed: boolean; attempts: number };
+    };
+    expect(body.provider).toBe("gemini");
+    expect(body.model).toBe("gemini-3-pro-image");
+    expect(body.image).toBe("data:image/png;base64,QUJD");
+    expect(body.qa?.passed).toBe(true);
+    expect(body.qa?.attempts).toBe(1);
+
+    // First fetch went to gemini-3-pro-image; QA call was the second.
+    const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
+    expect(String(url)).toContain("gemini-3-pro-image");
+    const reqBody = JSON.parse(init.body as string) as {
+      contents: Array<{ parts: Array<{ text: string }> }>;
+    };
+    expect(reqBody.contents[0].parts[0].text).toContain("Anatomically correct hands");
+
+    const { rows } = await pool.query(
+      "SELECT workspace_id AS \"workspaceId\", provider, model FROM ai_usage WHERE workspace_id = $1",
+      [workspaceId],
+    );
+    expect(rows).toHaveLength(1);
+    expect((rows[0] as { provider: string }).provider).toBe("gemini");
+  });
+
+  it("returns 502 when the hero QA gate fails after 3 attempts", async () => {
+    const { userId } = await createUserWithWorkspace("herofail@empyrean.com");
+    mockAuth.mockResolvedValue({ user: { id: userId } });
+    for (let i = 0; i < 3; i++) {
+      fetchMock
+        .mockResolvedValueOnce(
+          jsonResponse({
+            candidates: [
+              { content: { parts: [{ inlineData: { data: "QUJD", mimeType: "image/png" } }] } },
+            ],
+          }),
+        )
+        .mockResolvedValueOnce(
+          jsonResponse({
+            candidates: [{ content: { parts: [{ text: "FAIL, fused fingers" }] } }],
+          }),
+        );
+    }
+
+    const response = await postJson({ prompt: "A hero", hero: true });
+    expect(response.status).toBe(502);
+    const body = (await response.json()) as { error: string };
+    expect(body.error).toContain("failed QA after 3 attempts");
   });
 });

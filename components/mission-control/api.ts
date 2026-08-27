@@ -92,14 +92,22 @@ export async function scheduleSend(input: ScheduleInput): Promise<{ id: string; 
   return (await response.json()) as { id: string; status: string; scheduledFor: string };
 }
 
-export async function generateImage(prompt: string): Promise<{ image: string; provider: string; model: string }> {
+export async function generateImage(
+  prompt: string,
+  opts: { hero?: boolean } = {},
+): Promise<{ image: string; provider: string; model: string; qa?: { passed: boolean; attempts: number; reason: string } }> {
   const response = await fetch("/api/ai/image", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ prompt }),
+    body: JSON.stringify({ prompt, hero: opts.hero ?? false }),
   });
   if (!response.ok) throw new Error(await apiError(response));
-  return (await response.json()) as { image: string; provider: string; model: string };
+  return (await response.json()) as {
+    image: string;
+    provider: string;
+    model: string;
+    qa?: { passed: boolean; attempts: number; reason: string };
+  };
 }
 
 export function tomorrowNineSast(): string {

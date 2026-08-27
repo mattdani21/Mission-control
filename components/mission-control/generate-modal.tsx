@@ -58,7 +58,7 @@ export function GenerateModal({
     setError(null);
     setResult(null);
     try {
-      const res = await generateImage(trimmed);
+      const res = await generateImage(trimmed, { hero: true });
       setResult({ image: res.image, model: res.model });
       setCaption(trimmed.slice(0, 160));
     } catch (err) {
@@ -159,7 +159,7 @@ export function GenerateModal({
                   className="h-1.5 w-1.5 rounded-full bg-[color:var(--brand-accent,var(--accent))] shadow-[0_0_6px_color-mix(in_srgb,var(--brand-accent,var(--accent))_60%,transparent)]"
                   aria-hidden
                 />
-                Gemini 2.5 Flash Image · ~$0.04/img
+                Gemini 3 Pro Image · hand-safe QA gate · ~$0.05/img
               </div>
               <h3 className="text-[16px] font-bold tracking-[-0.01em] text-ink">Generate new look</h3>
             </div>

@@ -809,7 +809,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
       </div>
 
       <p className="mt-5 text-center text-[11px] text-dim">
-        Pilot build — AI copy via DeepSeek v4-flash · images via Gemini 2.5 Flash Image · email via Resend. Human-in-the-loop: AI drafts, a human approves, only then it posts.
+        Pilot build — AI copy via DeepSeek v4-flash · hero images via gemini-3-pro-image with hand-safe QA · drafts via Gemini 2.5 Flash Image · email via Resend. Human-in-the-loop: AI drafts, a human approves, only then it posts.
       </p>
 
       {/* ── Gemini generate pop-out ── */}
