@@ -26,6 +26,8 @@
   --shadow-hover: 0 2px 4px rgba(0, 0, 0, 0.4), 0 16px 40px rgba(0, 0, 0, 0.5);
   --radius: 16px;
   --radius-s: 12px;
+  --radius-sm: 10px;
+  --radius-xs: 8px;
 }
 
 html.light {
@@ -98,36 +100,68 @@ body {
     border-bottom: 1px solid var(--line);
   }
 
-  /* Segmented control (time horizon / brand filter) */
+  /* Segmented control (time horizon / brand filter / product) */
   .seg {
     display: flex;
     background: var(--seg-bg);
-    border-radius: 10px;
-    padding: 2px;
+    border-radius: var(--radius-sm);
+    padding: 3px;
     gap: 2px;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(12px) saturate(160%);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
   }
   .seg button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    min-height: 34px;
+    white-space: nowrap;
     background: transparent;
     border: none;
     color: var(--mut);
     font-size: 12px;
     font-weight: 500;
     padding: 5px 13px;
-    border-radius: 8px;
+    border-radius: var(--radius-xs);
     cursor: pointer;
     transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
     font-family: inherit;
     letter-spacing: 0.01em;
   }
-  .seg button.on {
-    background: color-mix(in srgb, var(--brand-accent, var(--accent)) 16%, transparent);
-    color: color-mix(in srgb, var(--brand-accent, var(--accent)) 88%, var(--ink));
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  .seg button:active {
+    transform: scale(0.96);
   }
   .seg button:not(.on):hover {
     color: var(--ink);
+    background: var(--seg-active);
+  }
+  .seg button.on {
+    background: color-mix(in srgb, var(--brand-accent, var(--accent)) 16%, transparent);
+    color: color-mix(in srgb, var(--brand-accent, var(--accent)) 88%, var(--ink));
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.06),
+      0 1px 4px rgba(0, 0, 0, 0.12);
+  }
+
+  /* Scrollable seg variant: keeps ≥34px tap targets and focus rings
+     unclipped while 4-5 items scroll horizontally on phones. */
+  .seg-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--ink) 18%, transparent) transparent;
+    -webkit-overflow-scrolling: touch;
+    padding-block: 5px;
+    margin-block: -2px;
+  }
+  .seg-scroll::-webkit-scrollbar {
+    height: 6px;
+  }
+  .seg-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .seg-scroll::-webkit-scrollbar-thumb {
+    background: color-mix(in srgb, var(--ink) 16%, transparent);
+    border-radius: 99px;
   }
 
   /* Platform chips */
@@ -170,6 +204,11 @@ body {
     background: var(--am);
   }
 
+  /* Brand-accent text (company trigger label, mirrors .seg button.on) */
+  .brand-text {
+    color: color-mix(in srgb, var(--brand-accent, var(--accent)) 85%, var(--ink));
+  }
+
   /* Cards */
   .mc-card {
     background: var(--surface);
@@ -187,15 +226,17 @@ body {
     border-top: 2px solid color-mix(in srgb, var(--brand-accent, var(--accent)) 60%, transparent);
     border-radius: var(--radius-s);
     padding: 14px 16px;
-    backdrop-filter: blur(16px) saturate(160%);
-    -webkit-backdrop-filter: blur(16px) saturate(160%);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
     box-shadow: var(--shadow);
     transition:
       transform 0.25s ease,
-      box-shadow 0.25s ease;
+      box-shadow 0.25s ease,
+      border-color 0.25s ease;
   }
   .goal:hover {
     transform: translateY(-2px);
+    border-color: color-mix(in srgb, var(--brand-accent, var(--accent)) 28%, var(--line));
     box-shadow: var(--shadow-hover);
   }
 
@@ -203,7 +244,9 @@ body {
   .tg {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
+    min-height: 34px;
     font-size: 11px;
     font-weight: 500;
     padding: 6px 12px;
@@ -214,6 +257,13 @@ body {
     transition: all 0.2s ease;
     background: var(--surface-2);
     font-family: inherit;
+  }
+  .tg:hover {
+    border-color: var(--dim);
+    color: var(--ink);
+  }
+  .tg:active {
+    transform: scale(0.97);
   }
   .tg.on {
     border-color: color-mix(in srgb, var(--brand-accent, var(--accent)) 55%, transparent);
@@ -233,58 +283,69 @@ body {
 
   /* Primary / secondary buttons */
   .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 36px;
     font-size: 13px;
     font-weight: 600;
     padding: 9px 20px;
-    border-radius: 12px;
+    border-radius: var(--radius-s);
     cursor: pointer;
     transition: all 0.2s ease;
     font-family: inherit;
     letter-spacing: 0.01em;
   }
-  .btn.sched {
+  .btn:active {
+    transform: scale(0.98);
+  }
+  .btn.sched,
+  .btn.ghost {
     background: transparent;
     color: var(--mut);
     border: 1px solid var(--line);
   }
-  .btn.sched:hover {
+  .btn.sched:hover,
+  .btn.ghost:hover {
+    background: var(--surface-2);
     border-color: var(--dim);
     color: var(--ink);
   }
   .btn.post {
-    background: var(--accent);
+    /* Brand accent drives the primary CTA (per-brand via --brand-accent).
+       Near-black on gold: ≥7.9:1 in dark mode, ≥5.6:1 in light — WCAG AA. */
+    background: color-mix(in srgb, var(--brand-accent, var(--accent)) 92%, #ffffff 8%);
     border: none;
-    /* Near-black on gold: ≥7.9:1 in dark mode, ≥5.6:1 in light — WCAG AA. */
     color: #14100a;
-    box-shadow: 0 2px 10px color-mix(in srgb, var(--accent) 40%, transparent);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.16),
+      0 2px 10px color-mix(in srgb, var(--brand-accent, var(--accent)) 40%, transparent);
   }
   .btn.post:hover {
     filter: brightness(1.08);
     transform: translateY(-1px);
+  }
+  .btn.post:active {
+    transform: translateY(0) scale(0.98);
   }
   .btn.post:disabled {
     opacity: 0.4;
     cursor: default;
     transform: none;
   }
-  .btn.ghost {
-    background: transparent;
-    color: var(--mut);
-    border: 1px solid var(--line);
-  }
-  .btn.ghost:hover {
-    color: var(--ink);
-    border-color: var(--dim);
-  }
 
   .aibtn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 34px;
     font-size: 11.5px;
     font-weight: 600;
     color: var(--accent-ink);
     border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
     background: var(--accent-soft);
     padding: 6px 13px;
-    border-radius: 9px;
+    border-radius: var(--radius-xs);
     cursor: pointer;
     transition: all 0.2s ease;
     font-family: inherit;
@@ -292,6 +353,9 @@ body {
   .aibtn:hover {
     filter: brightness(1.06);
     transform: translateY(-1px);
+  }
+  .aibtn:active {
+    transform: translateY(0) scale(0.98);
   }
   .aibtn:disabled {
     opacity: 0.5;
@@ -303,7 +367,7 @@ body {
     width: 100%;
     background: var(--surface-2);
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: var(--radius-s);
     color: var(--ink);
     font-family: inherit;
     font-size: 13.5px;
@@ -324,17 +388,21 @@ body {
   .mc-input {
     background: var(--surface-2);
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: var(--radius-sm);
     color: var(--ink);
     font-family: inherit;
     font-size: 12px;
     padding: 8px 11px;
+    min-height: 34px;
     outline: none;
-    transition: border-color 0.2s;
+    transition:
+      border-color 0.2s,
+      box-shadow 0.2s;
     min-width: 0;
   }
   .mc-input:focus {
     border-color: color-mix(in srgb, var(--accent) 55%, var(--line));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 14%, transparent);
   }
 
   /* Calendar bars — strong enough fills to read as Gantt blocks on any
@@ -374,7 +442,7 @@ body {
   .pcard {
     background: var(--surface-solid);
     border: 1px solid var(--line);
-    border-radius: 13px;
+    border-radius: var(--radius-s);
     padding: 11px 12px;
     margin-bottom: 9px;
     cursor: pointer;
@@ -465,9 +533,61 @@ body {
   }
 }
 
+/* ── Global interaction polish ── */
+
+/* Brand-aware focus ring on keyboard nav (desktop). Inputs/textareas keep
+   their own box-shadow ring above, so they're excluded here. */
+button:focus-visible,
+a:focus-visible,
+[role="button"]:focus-visible,
+[role="menuitem"]:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand-accent, var(--accent)) 60%, transparent);
+  outline-offset: 2px;
+}
+
+/* Kill the grey flash on mobile taps. */
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--brand-accent, var(--accent)) 30%, transparent);
+  color: var(--ink);
+}
+
+/* Thin, subtle scrollbars on every overflow area. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--ink) 16%, transparent) transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--ink) 16%, transparent);
+  border: 2px solid transparent;
+  border-radius: 99px;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--ink) 26%, transparent);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  * {
+  *,
+  *::before,
+  *::after {
     transition: none !important;
     animation: none !important;
+    scroll-behavior: auto !important;
   }
 }

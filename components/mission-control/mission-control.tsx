@@ -427,12 +427,12 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
       {/* ── header ── */}
       <header className="mc-header">
         <div className="flex min-w-0 items-center gap-[11px]">
-          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-[9px] bg-white shadow-[0_2px_8px_rgba(154,123,47,0.35)]">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-[10px] bg-white shadow-[0_2px_10px_color-mix(in_srgb,var(--brand-accent,var(--accent))_45%,transparent)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={view.logo} alt={view.brandName} className="h-full w-full object-contain" />
           </div>
           <div className={panelOpen ? "min-w-0" : "hidden min-w-0"}>
-            <h1 className="text-[16px] font-bold leading-tight tracking-[-0.02em] text-ink sm:text-[19px]">
+            <h1 className="truncate text-[16px] font-bold leading-tight tracking-[-0.02em] text-ink sm:text-[19px]">
               Marketing Mission Control
             </h1>
             <span className="mt-0.5 block truncate text-[11.5px] text-mut">
@@ -448,7 +448,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
             aria-expanded={panelOpen}
             aria-label={panelOpen ? "Collapse top panel" : "Expand top panel"}
             title={panelOpen ? "Collapse panel" : "Expand panel"}
-            className="flex h-[34px] w-[34px] cursor-pointer items-center justify-center rounded-full border border-line bg-surface text-mut transition-transform hover:scale-105 hover:text-ink"
+            className="flex h-[34px] w-[34px] cursor-pointer items-center justify-center rounded-full border border-line bg-surface text-mut transition-transform hover:scale-105 hover:text-ink active:scale-95"
           >
             {panelOpen ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
           </button>
@@ -463,11 +463,11 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
                   }}
                   aria-expanded={slotMenuOpen}
                   aria-haspopup="menu"
-                  className="flex h-[34px] cursor-pointer items-center gap-2 rounded-full border border-line bg-surface px-3.5 text-[11px] font-semibold text-mut transition-colors hover:text-ink"
+                  className="flex h-[34px] min-w-0 max-w-[54vw] cursor-pointer items-center gap-2 rounded-full border border-line bg-surface px-3.5 text-[11px] font-semibold text-mut transition-colors hover:text-ink active:scale-[0.98]"
                   title="Toggle companies"
                 >
-                  <span className="text-accent-ink">{isAll ? "All companies" : `Full platform as ${view.brandName}`}</span>
-                  <ChevronDown size={13} className={`transition-transform ${slotMenuOpen ? "rotate-180" : ""}`} aria-hidden />
+                  <span className="brand-text min-w-0 truncate">{isAll ? "All companies" : `Full platform as ${view.brandName}`}</span>
+                  <ChevronDown size={13} className={`flex-shrink-0 transition-transform ${slotMenuOpen ? "rotate-180" : ""}`} aria-hidden />
                 </button>
                 {slotMenuOpen ? (
                   <div
@@ -478,7 +478,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
                     <button
                       type="button"
                       role="menuitem"
-                      className={`block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-[12px] font-medium transition-colors hover:bg-surface-2 ${
+                      className={`block w-full cursor-pointer rounded-lg px-3 py-2.5 text-left text-[12px] font-medium transition-colors hover:bg-surface-2 ${
                         isAll ? "bg-surface-2 text-ink" : "text-mut"
                       }`}
                       onClick={() => switchSlot("all")}
@@ -491,7 +491,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
                         key={sid}
                         type="button"
                         role="menuitem"
-                        className={`block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-[12px] font-medium transition-colors hover:bg-surface-2 ${
+                        className={`block w-full cursor-pointer rounded-lg px-3 py-2.5 text-left text-[12px] font-medium transition-colors hover:bg-surface-2 ${
                           activeSlot === sid ? "bg-surface-2 text-ink" : "text-mut"
                         }`}
                         onClick={() => switchSlot(sid)}
@@ -506,7 +506,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
                 ) : null}
               </div>
               {hasProducts ? (
-                <div className="seg max-w-full overflow-x-auto" role="group" aria-label="Product">
+                <div className="seg seg-scroll max-w-full overflow-x-auto" role="group" aria-label="Product">
                   <button
                     type="button"
                     className={productId === "all" ? "on" : ""}
@@ -538,7 +538,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
                   </button>
                 </div>
               )}
-              <div className="flex flex-wrap items-center gap-[5px]" aria-hidden>
+              <div className="hidden flex-wrap items-center gap-[5px] min-[430px]:flex" aria-hidden>
                 <span className="plat"><i className="ig" />IG</span>
                 <span className="plat"><i className="tk" />TikTok</span>
                 <span className="plat"><i className="pin" />Pin</span>
@@ -549,7 +549,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
               <button
                 type="button"
                 onClick={toggleTheme}
-                className="flex h-[34px] w-[34px] cursor-pointer items-center justify-center rounded-full border border-line bg-surface text-mut transition-transform hover:scale-105 hover:text-ink"
+                className="flex h-[34px] w-[34px] cursor-pointer items-center justify-center rounded-full border border-line bg-surface text-mut transition-transform hover:scale-105 hover:text-ink active:scale-95"
                 title="Toggle appearance"
                 aria-label="Toggle light or dark theme"
               >
@@ -563,12 +563,12 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
 
       {/* ── time horizon ── */}
       <div className="mb-4 mt-[18px] flex flex-wrap items-center justify-between gap-3">
-        <div className="seg max-w-full overflow-x-auto" role="group" aria-label="Time horizon">
+        <div className="seg seg-scroll max-w-full overflow-x-auto" role="group" aria-label="Time horizon">
           {(["year", "quarter", "month", "week", "day"] as TimeScale[]).map((s) => (
             <button
               key={s}
               type="button"
-              className={`${scale === s ? "on" : ""} !px-3 !py-[7px] !text-[12px] !font-semibold sm:!px-5 sm:!text-[12.5px]`}
+              className={`${scale === s ? "on" : ""} !px-3 !font-semibold sm:!px-5 sm:!text-[12.5px]`}
               onClick={() => setScale(s)}
             >
               {s.toUpperCase()}
