@@ -31,9 +31,16 @@ describe("slot templates", () => {
       expect(slot.captionBank.length).toBeGreaterThan(0);
       expect(slot.gallery.length).toBeGreaterThan(0);
       // Pipeline covers every stage.
-      for (const stage of ["Concept", "Draft", "Editor", "Approval", "Post ready"]) {
+      for (const stage of ["Winner", "Test map", "Draft", "Editor", "Post ready"]) {
         expect(slot.pipe[stage]?.length ?? 0).toBeGreaterThan(0);
       }
+      // Creative-iteration discipline: every slot seeds a PROVEN winner and
+      // a one-variable test map (HOOK / FORMAT / FACE / ARGUMENT).
+      expect(slot.pipe.Winner?.some((c) => c.variable === "PROVEN")).toBe(true);
+      expect(slot.pipe["Test map"]?.some((c) => c.variable === "HOOK")).toBe(true);
+      expect(slot.pipe["Test map"]?.some((c) => c.variable === "FORMAT")).toBe(true);
+      expect(slot.pipe["Test map"]?.some((c) => c.variable === "FACE")).toBe(true);
+      expect(slot.pipe["Test map"]?.some((c) => c.variable === "ARGUMENT")).toBe(true);
       // Calendar rows stay inside the 12-month axis.
       for (const w of slot.windows) {
         expect(w.s).toBeGreaterThanOrEqual(0);
@@ -65,7 +72,7 @@ describe("slot templates", () => {
       expect(p.queue.length).toBeGreaterThan(0);
       expect(p.captionBank.length).toBeGreaterThan(0);
       expect(p.gallery.length).toBeGreaterThan(0);
-      for (const stage of ["Concept", "Draft", "Editor", "Approval", "Post ready"]) {
+      for (const stage of ["Winner", "Test map", "Draft", "Editor", "Post ready"]) {
         expect(p.pipe[stage]?.length ?? 0).toBeGreaterThan(0);
       }
     }

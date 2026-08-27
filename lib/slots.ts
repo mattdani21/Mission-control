@@ -176,11 +176,22 @@ const ENVOGUE: SlotConfig = {
     { s: 0, e: 11, label: "Always-on: try-ons + Rail Report", brand: "brand", cls: "camp-brand" },
   ],
   pipe: {
-    Concept: [
-      { title: "Hero Girl 1 — journey ep 1", sub: "fitting → reveal · serial", tag: "ugc", brand: "env" },
-      { title: "'Book Your Dance' landing refresh", sub: "2026 · deadline 30 Sep", tag: "ai", brand: "env" },
-      { title: "Try-On Tuesday hooks ×6", sub: "hanger → twirl → verdict", tag: "ai", brand: "brand" },
-      { title: "UGC brief: Tier 1 creator", sub: "try-on haul · 7-day window", tag: "ugc", brand: "env" },
+    Winner: [
+      {
+        title: "Try-On Tuesday reel — CD811",
+        sub: "hook: 30 Sep deadline · argument: first-to-book · buyer: matric girls + moms · format: 15s try-on",
+        tag: "ugc",
+        brand: "env",
+        variable: "PROVEN",
+      },
+      { title: "'Book Your Dance' hero post", sub: "scheduled · IG+TikTok+Pin", tag: "ai", brand: "env", variable: "PROVEN" },
+    ],
+    "Test map": [
+      { title: "Hook: 'last size in your dress'", sub: "same argument · new opening", tag: "ai", brand: "env", variable: "HOOK" },
+      { title: "Hook: mom's 1986 dance story", sub: "pattern interrupt · same message", tag: "ai", brand: "brand", variable: "HOOK" },
+      { title: "Format: founder-to-camera", sub: "15s · same script", tag: "ai", brand: "env", variable: "FORMAT" },
+      { title: "Face: Hero Girl 1 — same message", sub: "fight ad fatigue on the proven line", tag: "ugc", brand: "env", variable: "FACE" },
+      { title: "Argument: alterations on us", sub: "new reason · same buyer", tag: "ai", brand: "env", variable: "ARGUMENT" },
     ],
     Draft: [
       { title: "Last Pieces email — A/B", sub: "subject test · warm list", tag: "ai", brand: "env" },
@@ -191,14 +202,10 @@ const ENVOGUE: SlotConfig = {
     Editor: [
       { title: "Hero Girl reveal edit", sub: "human edits raw footage", tag: "ugc", brand: "env" },
       { title: "Alteration slot reminders", sub: "auto + human copy check", tag: "auto", brand: "env" },
-      { title: "Retargeting urgency static", sub: "A3 · warm audiences", tag: "ad", brand: "env" },
-    ],
-    Approval: [
       { title: "Retargeting ad — urgency", sub: "kill >R1,000 CPA", tag: "ad", brand: "env" },
       { title: "Rail Report #0 frames", sub: "weekly roundup", tag: "ugc", brand: "both" },
     ],
     "Post ready": [
-      { title: "'Book Your Dance' hero post", sub: "scheduled · IG+TikTok+Pin", tag: "ai", brand: "env" },
       { title: "Try-on reel — CD811", sub: "published · saving well", tag: "ugc", brand: "env" },
       { title: "Email blast — A/B live", sub: "warm list · single send", tag: "auto", brand: "env" },
     ],
@@ -373,20 +380,28 @@ const TESSERA: SlotConfig = {
     { s: 0, e: 11, label: "Always-on: usage + support", brand: "brand", cls: "camp-brand" },
   ],
   pipe: {
-    Concept: [
-      { title: "Demo request → brief", sub: "5/wk · intake", tag: "ugc", brand: "env" },
-      { title: "Pilot scoping doc", sub: "bounded task · 1 month", tag: "ai", brand: "env" },
-      { title: "Case study — shinji", sub: "$24k pilot → $96k/yr", tag: "ai", brand: "both" },
+    Winner: [
+      {
+        title: "Shinji case study — $24k → $96k",
+        sub: "hook: 'your inbox indexes itself' · argument: pilot becomes payroll · buyer: ops leads · format: case study + demo",
+        tag: "ai",
+        brand: "both",
+        variable: "PROVEN",
+      },
+    ],
+    "Test map": [
+      { title: "Hook: 'the $24k experiment'", sub: "same proof · new opening", tag: "ai", brand: "env", variable: "HOOK" },
+      { title: "Format: demo walkthrough", sub: "60s screen recording", tag: "ugc", brand: "env", variable: "FORMAT" },
+      { title: "Face: client ops lead", sub: "same story · their voice", tag: "ugc", brand: "both", variable: "FACE" },
+      { title: "Argument: 40 hrs/wk saved", sub: "new reason · same buyer", tag: "ai", brand: "env", variable: "ARGUMENT" },
     ],
     Draft: [
-      { title: "Model Gate deck", sub: "trust layer · ledger", tag: "ai", brand: "env" },
-      { title: "Pilot SOW v2", sub: "scope + gates", tag: "ai", brand: "env" },
+      { title: "Demo request → brief", sub: "5/wk · intake", tag: "ugc", brand: "env" },
+      { title: "Pilot scoping doc", sub: "bounded task · 1 month", tag: "ai", brand: "env" },
     ],
     Editor: [
       { title: "Demo recording edit", sub: "human gate", tag: "ugc", brand: "env" },
       { title: "Usage report", sub: "weekly · auto", tag: "auto", brand: "both" },
-    ],
-    Approval: [
       { title: "Pilot SOW — founder", sub: "sign before build", tag: "ad", brand: "env" },
     ],
     "Post ready": [
@@ -506,19 +521,28 @@ const TESSERA: SlotConfig = {
         { s: 0, e: 11, label: "Always-on: index health", brand: "brand", cls: "camp-brand" },
       ],
       pipe: {
-        Concept: [
-          { title: "Demo request → brief", sub: "inbox task fit", tag: "ugc", brand: "env" },
-          { title: "Scoping: inbox rules", sub: "bounded task · 1 month", tag: "ai", brand: "env" },
+        Winner: [
+          {
+            title: "Index-health case — $24k → $96k",
+            sub: "hook: 'inbox never waits' · argument: earns its payroll · buyer: ops leads · format: case study",
+            tag: "ai",
+            brand: "both",
+            variable: "PROVEN",
+          },
+        ],
+        "Test map": [
+          { title: "Hook: '1,200 emails a day'", sub: "same proof · new opening", tag: "ai", brand: "env", variable: "HOOK" },
+          { title: "Format: live index demo", sub: "60s screen recording", tag: "ugc", brand: "env", variable: "FORMAT" },
+          { title: "Face: pilot client ops lead", sub: "same story · their voice", tag: "ugc", brand: "both", variable: "FACE" },
+          { title: "Argument: 40 hrs/wk saved", sub: "new reason · same buyer", tag: "ai", brand: "env", variable: "ARGUMENT" },
         ],
         Draft: [
-          { title: "Case study — shinji", sub: "$24k pilot → $96k/yr", tag: "ai", brand: "both" },
-          { title: "Pilot SOW v2", sub: "scope + gates", tag: "ai", brand: "env" },
+          { title: "Demo request → brief", sub: "inbox task fit", tag: "ugc", brand: "env" },
+          { title: "Scoping: inbox rules", sub: "bounded task · 1 month", tag: "ai", brand: "env" },
         ],
         Editor: [
           { title: "Demo recording edit", sub: "human gate", tag: "ugc", brand: "env" },
           { title: "Index health report", sub: "weekly · auto", tag: "auto", brand: "both" },
-        ],
-        Approval: [
           { title: "Pilot SOW — founder", sub: "sign before build", tag: "ad", brand: "env" },
         ],
         "Post ready": [
@@ -606,16 +630,27 @@ const TESSERA: SlotConfig = {
         { s: 0, e: 11, label: "Always-on: ledger + alerts", brand: "brand", cls: "camp-brand" },
       ],
       pipe: {
-        Concept: [
-          { title: "Gate demo → brief", sub: "trust-layer fit", tag: "ugc", brand: "env" },
+        Winner: [
+          {
+            title: "Ledger health post — 1M checks",
+            sub: "hook: 'the gate that never sleeps' · argument: 99.9% uptime, full audit · buyer: trust officers · format: stat post",
+            tag: "ai",
+            brand: "both",
+            variable: "PROVEN",
+          },
+        ],
+        "Test map": [
+          { title: "Hook: 'audit for free'", sub: "same proof · new opening", tag: "ai", brand: "env", variable: "HOOK" },
+          { title: "Format: ledger walkthrough", sub: "60s UI recording", tag: "ugc", brand: "env", variable: "FORMAT" },
+          { title: "Face: client ops lead", sub: "same story · their voice", tag: "ugc", brand: "both", variable: "FACE" },
+          { title: "Argument: deploys gated", sub: "new reason · same buyer", tag: "ai", brand: "env", variable: "ARGUMENT" },
         ],
         Draft: [
+          { title: "Gate demo → brief", sub: "trust-layer fit", tag: "ugc", brand: "env" },
           { title: "Trust report — client", sub: "monthly ledger", tag: "ai", brand: "both" },
         ],
         Editor: [
           { title: "Audit log review", sub: "human gate", tag: "auto", brand: "env" },
-        ],
-        Approval: [
           { title: "Deploy gate — founder", sub: "sign before ship", tag: "ad", brand: "env" },
         ],
         "Post ready": [
@@ -702,16 +737,27 @@ const TESSERA: SlotConfig = {
         { s: 0, e: 11, label: "Always-on: serving", brand: "brand", cls: "camp-brand" },
       ],
       pipe: {
-        Concept: [
-          { title: "Teacher run capture", sub: "trajectory data", tag: "ai", brand: "env" },
+        Winner: [
+          {
+            title: "Runtime brief — $0.003/sample",
+            sub: "hook: 'small model, small bill' · argument: SLM economics + local data · buyer: ML leads · format: metrics brief",
+            tag: "ai",
+            brand: "both",
+            variable: "PROVEN",
+          },
+        ],
+        "Test map": [
+          { title: "Hook: 'your data never leaves'", sub: "same proof · new opening", tag: "ai", brand: "env", variable: "HOOK" },
+          { title: "Format: eval viz", sub: "latency + cost charts", tag: "ugc", brand: "env", variable: "FORMAT" },
+          { title: "Face: ML lead voice", sub: "same story · their role", tag: "ugc", brand: "both", variable: "FACE" },
+          { title: "Argument: 190ms p50", sub: "new reason · same buyer", tag: "ai", brand: "env", variable: "ARGUMENT" },
         ],
         Draft: [
+          { title: "Teacher run capture", sub: "trajectory data", tag: "ai", brand: "env" },
           { title: "Distill run v3", sub: "SLM candidate", tag: "ai", brand: "env" },
         ],
         Editor: [
           { title: "Eval suite — 4 tasks", sub: "green gate", tag: "auto", brand: "both" },
-        ],
-        Approval: [
           { title: "Model ship — founder", sub: "eval gate", tag: "ad", brand: "env" },
         ],
         "Post ready": [
@@ -822,19 +868,29 @@ const DECILE: SlotConfig = {
     { s: 0, e: 11, label: "Always-on: audit + support", brand: "brand", cls: "camp-brand" },
   ],
   pipe: {
-    Concept: [
-      { title: "Demo request → brief", sub: "validation task fit", tag: "ugc", brand: "env" },
-      { title: "Validation scoping", sub: "bounded task · 1 month", tag: "ai", brand: "env" },
+    Winner: [
+      {
+        title: "Evidence case — audit trail wins",
+        sub: "hook: 'regulated finance buys receipts' · argument: 100% audit trails · buyer: actuarial / risk leads · format: case study",
+        tag: "ai",
+        brand: "both",
+        variable: "PROVEN",
+      },
+    ],
+    "Test map": [
+      { title: "Hook: 'magic isn't a control'", sub: "same proof · new opening", tag: "ai", brand: "env", variable: "HOOK" },
+      { title: "Format: audit trail walkthrough", sub: "60s UI recording", tag: "ugc", brand: "env", variable: "FORMAT" },
+      { title: "Face: actuary voice", sub: "same story · their register", tag: "ugc", brand: "both", variable: "FACE" },
+      { title: "Argument: evidence-engine demos", sub: "new reason · same buyer", tag: "ai", brand: "env", variable: "ARGUMENT" },
     ],
     Draft: [
+      { title: "Demo request → brief", sub: "validation task fit", tag: "ugc", brand: "env" },
+      { title: "Validation scoping", sub: "bounded task · 1 month", tag: "ai", brand: "env" },
       { title: "Evidence pack v1", sub: "hand-calc proof set", tag: "ai", brand: "env" },
-      { title: "Pilot SOW v2", sub: "scope + gates", tag: "ai", brand: "env" },
     ],
     Editor: [
       { title: "Demo recording edit", sub: "human gate", tag: "ugc", brand: "env" },
       { title: "Audit report", sub: "weekly · auto", tag: "auto", brand: "both" },
-    ],
-    Approval: [
       { title: "Pilot SOW — founder", sub: "sign before build", tag: "ad", brand: "env" },
     ],
     "Post ready": [
@@ -952,19 +1008,29 @@ const ITRAIN: SlotConfig = {
     { s: 0, e: 11, label: "Always-on: learner support", brand: "brand", cls: "camp-brand" },
   ],
   pipe: {
-    Concept: [
-      { title: "Compliance audit → bundle", sub: "gap → course list", tag: "ugc", brand: "env" },
-      { title: "Course brief", sub: "AI draft from docs", tag: "ai", brand: "env" },
+    Winner: [
+      {
+        title: "Compliance bundle drop — Q4 season",
+        sub: "hook: 'your certificates expire' · argument: close the gap before December · buyer: HR / ops managers · format: course drop",
+        tag: "ai",
+        brand: "both",
+        variable: "PROVEN",
+      },
+    ],
+    "Test map": [
+      { title: "Hook: 'the December scare'", sub: "same proof · new opening", tag: "ai", brand: "env", variable: "HOOK" },
+      { title: "Format: learner demo", sub: "60s course walkthrough", tag: "ugc", brand: "env", variable: "FORMAT" },
+      { title: "Face: HR voice", sub: "same story · their department", tag: "ugc", brand: "both", variable: "FACE" },
+      { title: "Argument: 85% completion", sub: "new reason · same buyer", tag: "ai", brand: "env", variable: "ARGUMENT" },
     ],
     Draft: [
+      { title: "Compliance audit → bundle", sub: "gap → course list", tag: "ugc", brand: "env" },
+      { title: "Course brief", sub: "AI draft from docs", tag: "ai", brand: "env" },
       { title: "Course v1 — AI build", sub: "6 modules", tag: "ai", brand: "env" },
-      { title: "Certificate template", sub: "compliance-ready", tag: "ai", brand: "env" },
     ],
     Editor: [
       { title: "Course review — human", sub: "expert gate", tag: "ugc", brand: "env" },
       { title: "Learner reminders", sub: "auto · WA-first", tag: "auto", brand: "both" },
-    ],
-    Approval: [
       { title: "Bundle SOW — founder", sub: "sign before launch", tag: "ad", brand: "env" },
     ],
     "Post ready": [
@@ -1082,19 +1148,29 @@ const GAPOS: SlotConfig = {
     { s: 0, e: 11, label: "Always-on: weekly check-ins", brand: "brand", cls: "camp-brand" },
   ],
   pipe: {
-    Concept: [
-      { title: "Leadership demo → brief", sub: "one quarter pilot", tag: "ugc", brand: "env" },
-      { title: "Goal template pack", sub: "AI-drafted per team", tag: "ai", brand: "env" },
+    Winner: [
+      {
+        title: "Gap chart — Q4 goals launch",
+        sub: "hook: 'the gap is the map' · argument: targets + owners + dates · buyer: leadership teams · format: gap chart",
+        tag: "ai",
+        brand: "both",
+        variable: "PROVEN",
+      },
+    ],
+    "Test map": [
+      { title: "Hook: 'a goal without a date'", sub: "same proof · new opening", tag: "ai", brand: "env", variable: "HOOK" },
+      { title: "Format: live check-in", sub: "60s weekly review", tag: "ugc", brand: "env", variable: "FORMAT" },
+      { title: "Face: leader voice", sub: "same story · their team", tag: "ugc", brand: "both", variable: "FACE" },
+      { title: "Argument: 80% gap closure", sub: "new reason · same buyer", tag: "ai", brand: "env", variable: "ARGUMENT" },
     ],
     Draft: [
+      { title: "Leadership demo → brief", sub: "one quarter pilot", tag: "ugc", brand: "env" },
+      { title: "Goal template pack", sub: "AI-drafted per team", tag: "ai", brand: "env" },
       { title: "Team goals v1", sub: "targets + owners", tag: "ai", brand: "env" },
-      { title: "Gap report template", sub: "weekly auto", tag: "ai", brand: "both" },
     ],
     Editor: [
       { title: "Goal review — human", sub: "leader gate", tag: "ugc", brand: "env" },
       { title: "Check-in reminders", sub: "auto · WA", tag: "auto", brand: "both" },
-    ],
-    Approval: [
       { title: "Pilot SOW — founder", sub: "sign before build", tag: "ad", brand: "env" },
     ],
     "Post ready": [

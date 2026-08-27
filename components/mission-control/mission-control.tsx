@@ -82,9 +82,8 @@ function portfolioPipe(): Record<string, PipeCard[]> {
 }
 
 function mergePipes(pipeSets: Array<Record<string, PipeCard[]>>): Record<string, PipeCard[]> {
-  const stages = ["Concept", "Draft", "Editor", "Approval", "Post ready"] as const;
   const merged: Record<string, PipeCard[]> = {};
-  for (const stage of stages) {
+  for (const stage of STAGES) {
     merged[stage] = unionBy(
       pipeSets.map((ps) => ps[stage] ?? []),
       (c) => `${c.title}::${c.brand}`,
@@ -375,20 +374,27 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
 
   /* ── Generate: opens the Gemini pop-out (prompt → preview → add to gallery) ── */
 
-  /* ── Pipeline: click to advance a card ── */
+  /* ── Pipeline: click to advance a card; Post ready promotes the winner
+     back to Winner (closes the creative-iteration loop) ── */
   const handleAdvance = useCallback(
     (stage: string, title: string) => {
       setPipeline((prev) => {
         const idx = STAGES.indexOf(stage as (typeof STAGES)[number]);
-        if (idx < 0 || idx >= STAGES.length - 1) return prev;
-        const nextStage = STAGES[idx + 1]!;
+        if (idx < 0) return prev;
         const card = (prev[stage] ?? []).find((c) => c.title === title);
         if (!card) return prev;
-        return {
+        const next: Record<string, PipeCard[]> = {
           ...prev,
           [stage]: (prev[stage] ?? []).filter((c) => c.title !== title),
-          [nextStage]: [...(prev[nextStage] ?? []), card],
         };
+        if (idx < STAGES.length - 1) {
+          const nextStage = STAGES[idx + 1]!;
+          next[nextStage] = [...(prev[nextStage] ?? []), card];
+        } else {
+          // Post ready → winner. Mark it PROVEN and close the loop.
+          next.Winner = [{ ...card, variable: "PROVEN" }, ...(prev.Winner ?? [])];
+        }
+        return next;
       });
     },
     [],
@@ -398,7 +404,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
   const closeModal = () => setModal(null);
 
   const approveModal = () => {
-    setModal((prev) => (prev ? { ...prev, approved: true, stage: "Approval → Post ready" } : prev));
+    setModal((prev) => (prev ? { ...prev, approved: true, stage: "Editor → Post ready" } : prev));
   };
 
   const postModal = () => {

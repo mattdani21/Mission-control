@@ -33,7 +33,7 @@ export default function Home() {
       <div className="grid w-full max-w-3xl grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
           { icon: CalendarRange, title: "Capture calendar", sub: "Matric 2026 · July · Met" },
-          { icon: Layers, title: "Pipeline", sub: "Concept → Post ready" },
+          { icon: Layers, title: "Pipeline", sub: "Winner → Test map → Post ready" },
           { icon: Sparkles, title: "AI copy + images", sub: "DeepSeek · Gemini" },
           { icon: Send, title: "Scheduled sends", sub: "Email queue with webhook events" },
         ].map((f) => (

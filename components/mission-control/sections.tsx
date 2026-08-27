@@ -5,6 +5,7 @@ import {
   scaleWidth,
   STAGES,
   tagLabel,
+  variableLabel,
   type BrandFilter,
   type CampRow,
   type GalleryItem,
@@ -188,13 +189,26 @@ export function Pipeline({
                 <button
                   key={`${card.title}-${index}`}
                   type="button"
-                  onClick={() => !last && onAdvance(stage, card.title)}
+                  onClick={() => onAdvance(stage, card.title)}
                   className={`pcard group block w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--accent)_45%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-surface-2 active:translate-y-0 active:scale-[0.98] ${
                     last ? "done" : ""
-                  }`}
-                  aria-label={`${card.title} — advance to next stage`}
+                  } ${card.variable === "PROVEN" ? "proven" : ""}`}
+                  aria-label={
+                    last
+                      ? `${card.title} — promote to Winner`
+                      : `${card.title} — advance to next stage`
+                  }
                 >
-                  <span className={`tag ${card.tag} rounded-full border border-line`}>{tagLabel(card.tag)}</span>
+                  <span className="flex flex-wrap items-center gap-1">
+                    <span className={`tag ${card.tag} rounded-full border border-line`}>{tagLabel(card.tag)}</span>
+                    {card.variable ? (
+                      <span
+                        className={`var-chip var-${card.variable.toLowerCase()} rounded-full border`}
+                      >
+                        {variableLabel(card.variable)}
+                      </span>
+                    ) : null}
+                  </span>
                   <div className="mb-0.5 pr-4 text-[12px] font-semibold text-ink">{card.title}</div>
                   <div className="text-[10.5px] leading-[1.35] text-mut">{card.sub}</div>
                   <div className="mt-2 inline-flex items-center gap-1 rounded-[5px] bg-surface-2 px-[6px] py-[2px] text-[8px] font-bold tracking-[0.07em] text-dim">
@@ -211,7 +225,11 @@ export function Pipeline({
                 <div className="mt-auto pt-2 text-center text-[9.5px] font-medium tracking-[0.06em] text-dim">
                   ▼ advance
                 </div>
-              ) : null}
+              ) : (
+                <div className="mt-auto pt-2 text-center text-[9.5px] font-medium tracking-[0.06em] text-em">
+                  ▲ promote to Winner
+                </div>
+              )}
             </div>
           );
         })}

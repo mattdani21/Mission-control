@@ -40,6 +40,9 @@ export interface PipeCard {
   sub: string;
   tag: PipeTag;
   brand: "env" | "brand" | "both";
+  /** Creative-iteration variable this variant changes (Ac Hampton test-map
+   *  discipline): HOOK / FORMAT / FACE / ARGUMENT, or PROVEN for the winner. */
+  variable?: "HOOK" | "FORMAT" | "FACE" | "ARGUMENT" | "PROVEN";
 }
 
 export interface GalleryItem {
@@ -64,7 +67,15 @@ export const HORIZON_START = 8;
 
 export const CHANNELS = ["IG Feed", "Reels", "TikTok", "Pinterest", "Meta Ads", "Email", "WhatsApp"];
 
-export const STAGES = ["Concept", "Draft", "Editor", "Approval", "Post ready"] as const;
+/**
+ * Pipeline stages — creative-iteration loop (winner → one-variable test map →
+ * AI draft → human editor gate → post ready → winner promotes back).
+ */
+export const STAGES = ["Winner", "Test map", "Draft", "Editor", "Post ready"] as const;
+
+export function variableLabel(v: NonNullable<PipeCard["variable"]>): string {
+  return v;
+}
 
 export function brandMatch(brand: "env" | "brand" | "both", filter: BrandFilter): boolean {
   return filter === "all" || brand === "both" || brand === filter;
