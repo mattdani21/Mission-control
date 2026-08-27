@@ -58,6 +58,8 @@ export interface SlotConfig {
   brandName: string;
   /** Header logo asset (per-brand). */
   logo: string;
+  /** Brand accent color (hex) — drives seg active, KPI bar, chips, buttons. */
+  accent: string;
   tagline: string;
   composerDefault: string;
   defaultPrompt: string;
@@ -88,6 +90,7 @@ const ENVOGUE: SlotConfig = {
   label: "ENVOGUE",
   brandName: "Envogue",
   logo: "/assets/envogue-logo.jpg",
+  accent: "#D4A44C",
   tagline: "Empyrean Consult · plan the year · capture the market · publish everywhere",
   composerDefault:
     "The corseted column is the matric look of 2026. Book before 30 September and alterations are on us. Sizes 34–42. First choice goes to the first to book.",
@@ -290,6 +293,7 @@ const TESSERA: SlotConfig = {
   label: "TESSERA",
   brandName: "Tessera",
   logo: "/assets/tessera-logo.png",
+  accent: "#22D3EE",
   tagline: "Empyrean · AI employees · bounded tasks · pilot → ARR",
   composerDefault:
     "Tessera: an AI employee that owns a bounded task end-to-end. One pilot, one month — if it doesn't earn its payroll, you cut it.",
@@ -744,6 +748,7 @@ const DECILE: SlotConfig = {
   label: "DECILE",
   brandName: "Decile AI",
   logo: "/assets/decile-logo.png",
+  accent: "#A78BFA",
   tagline: "Empyrean · AI for regulated finance · validation-first",
   composerDefault:
     "Decile AI: agentic-AI validation for regulated finance. The trust layer is the product — every output carries an audit trail.",
@@ -873,6 +878,7 @@ const ITRAIN: SlotConfig = {
   label: "ITRAIN",
   brandName: "iTrain",
   logo: "/assets/itrain-logo.png",
+  accent: "#F97316",
   tagline: "Empyrean · AI training + compliance · SA B2B",
   composerDefault:
     "iTrain: AI-built training that closes compliance gaps — course player, learner rosters, certificate status. One department, one bundle, one compliance season.",
@@ -1002,6 +1008,7 @@ const GAPOS: SlotConfig = {
   label: "GAPOS",
   brandName: "GapOS",
   logo: "/assets/gapos-logo.png",
+  accent: "#34D399",
   tagline: "Empyrean · goals operating system · gap-to-target",
   composerDefault:
     "GapOS: the operating system for goals — target vs actual, gap severity, action plans with owners. The gap chart is the product.",

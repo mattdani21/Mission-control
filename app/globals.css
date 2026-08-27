@@ -122,8 +122,8 @@ body {
     letter-spacing: 0.01em;
   }
   .seg button.on {
-    background: var(--seg-active);
-    color: var(--ink);
+    background: color-mix(in srgb, var(--brand-accent, var(--accent)) 16%, transparent);
+    color: color-mix(in srgb, var(--brand-accent, var(--accent)) 88%, var(--ink));
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
   }
   .seg button:not(.on):hover {
@@ -184,6 +184,7 @@ body {
   .goal {
     background: var(--surface);
     border: 1px solid var(--line);
+    border-top: 2px solid color-mix(in srgb, var(--brand-accent, var(--accent)) 60%, transparent);
     border-radius: var(--radius-s);
     padding: 14px 16px;
     backdrop-filter: blur(16px) saturate(160%);
@@ -215,9 +216,9 @@ body {
     font-family: inherit;
   }
   .tg.on {
-    border-color: color-mix(in srgb, var(--accent) 55%, transparent);
-    color: var(--accent-ink);
-    background: var(--accent-soft);
+    border-color: color-mix(in srgb, var(--brand-accent, var(--accent)) 55%, transparent);
+    color: color-mix(in srgb, var(--brand-accent, var(--accent)) 82%, var(--ink));
+    background: color-mix(in srgb, var(--brand-accent, var(--accent)) 14%, transparent);
   }
   .tg .d {
     width: 6px;

@@ -420,7 +420,10 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
   const captionBank = view.captionBank;
 
   return (
-    <main className="mx-auto w-full max-w-[1240px] px-4 pb-[max(5rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:px-7">
+    <main
+      className="mx-auto w-full max-w-[1240px] px-4 pb-[max(5rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:px-7"
+      style={{ "--brand-accent": view.accent } as React.CSSProperties}
+    >
       {/* ── header ── */}
       <header className="mc-header">
         <div className="flex min-w-0 items-center gap-[11px]">
