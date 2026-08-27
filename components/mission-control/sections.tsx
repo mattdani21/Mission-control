@@ -26,8 +26,8 @@ function barStyle(s: number, e: number, width: number): React.CSSProperties {
 
 function CampBar({ row, width }: { row: CampRow; width: number }) {
   return (
-    <div className="calrow mb-[7px] flex items-center gap-3">
-      <div className="w-[168px] flex-shrink-0 text-right text-[11.5px] font-medium leading-tight text-mut">
+    <div className="calrow mb-[7px] flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
+      <div className="w-full text-left text-[11.5px] font-medium leading-tight text-mut sm:w-[168px] sm:flex-shrink-0 sm:text-right">
         {row.label}
       </div>
       <div className="relative h-6 flex-1 overflow-hidden rounded-[7px] border border-line-2 bg-surface-2">
@@ -54,8 +54,8 @@ export function CaptureCalendar({ scale, brand }: { scale: TimeScale; brand: Bra
       </h2>
       <div>
         {windows.map((w) => (
-          <div key={w.label} className="mb-[7px] flex items-center gap-3">
-            <div className="w-[168px] flex-shrink-0 text-right text-[11.5px] font-medium leading-tight text-mut">
+          <div key={w.label} className="mb-[7px] flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
+            <div className="w-full text-left text-[11.5px] font-medium leading-tight text-mut sm:w-[168px] sm:flex-shrink-0 sm:text-right">
               {w.label}
             </div>
             <div className="relative h-6 flex-1 overflow-hidden rounded-[7px] border border-line-2 bg-surface-2">

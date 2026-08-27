@@ -1,9 +1,9 @@
 /**
- * Mission Control dashboard data — the Winter Catalyst strategy as typed
- * dashboard state (goals per time scale, capture windows, campaigns,
- * pipeline, gallery, caption bank). Mirrors the approved mockup
- * (~/Empyrean/micaelan-jade/demos/mission-control.html) so the pilot UI
- * matches the founder-facing demo.
+ * Mission Control dashboard data — the Dance Countdown 2026 + 12-month
+ * horizon (Sep 2026 – Aug 2027) as typed dashboard state (goals per time
+ * scale, capture windows, campaigns, pipeline, gallery, caption bank).
+ * Source of truth: package files 18 (strategy) + 20 (12-month playbook).
+ * Calendar axis starts at September 2026 (MONTHS index 8).
  */
 
 export type TimeScale = "year" | "quarter" | "month" | "week" | "day";
@@ -52,115 +52,118 @@ export interface GalleryItem {
 
 export const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
+/** Calendar horizon starts at September 2026 (index 8 = Sep). */
+export const HORIZON_START = 8;
+
 export const TIME_CONTEXT: Record<TimeScale, string> = {
-  year: "Planning horizon · 2027 · Matric + Durban July + Summer",
-  quarter: "Q2 2027 · Apr–Jun · matric early-bird + Durban July",
-  month: "May 2027 · The Build · zero spend",
-  week: "This week · Wk 20 · lookbook + UGC cohort",
+  year: "Planning horizon · Sep 2026–Aug 2027 · Dance Countdown LIVE → Matric 2027 First Pick",
+  quarter: "Q4 2026 · Sep–Nov · Dance Countdown — the live season",
+  month: "Sep 2026 · Dance Countdown · LIVE NOW",
+  week: "This week · Wk 1 · urgency relaunch",
   day: "Today · capture window LIVE",
 };
 
 export const CAL_HINT: Record<TimeScale, string> = {
-  year: "12-month horizon",
-  quarter: "Q2 (Apr–Jun)",
-  month: "May — The Build",
-  week: "Wk 20",
+  year: "12-month horizon (Sep → Aug)",
+  quarter: "Q4 (Sep–Nov)",
+  month: "Sep — Dance Countdown",
+  week: "Wk 1",
   day: "today",
 };
 
 export const GOALS: Record<TimeScale, Goal[]> = {
   year: [
-    { label: "Bookings (2027)", value: "600+", sub: "matric 250 · DJ 120 · gala 230", tone: "gold" },
-    { label: "Revenue", value: "R6.2M", sub: "Envogue + dress line + software", tone: "up" },
-    { label: "Content assets", value: "1,500+", sub: "AI 60% · UGC 40%", tone: "plain" },
-    { label: "Brand followers", value: "1M", sub: "personal · 30% of bookings", tone: "am" },
-    { label: "Capture windows", value: "6 / 6", sub: "matric · DJ · dances · summer", tone: "up" },
-    { label: "ROAS (blended)", value: "3.2x", sub: "retargeting only", tone: "up" },
+    { label: "Bookings (2026–27)", value: "150+", sub: "dance 40 · matric'27 50 · july 20 · rest 40", tone: "gold" },
+    { label: "Revenue", value: "R250k+", sub: "6 campaigns · R25k cap each", tone: "up" },
+    { label: "Content assets", value: "800+", sub: "UGC 60% · AI 25% · pro 15%", tone: "plain" },
+    { label: "Followers", value: "10k", sub: "IG + TikTok · girls + moms", tone: "am" },
+    { label: "Capture windows", value: "6 / 6", sub: "dance · summer · date · matric'27 · july · gala", tone: "up" },
+    { label: "ROAS (blended)", value: "3.2x", sub: "target · warm retargeting only", tone: "up" },
   ],
   quarter: [
-    { label: "Q2 target (Apr–Jun)", value: "R1.3M", sub: "matric early-bird opens May", tone: "gold" },
-    { label: "Bookings", value: "150+", sub: "40+ from Winter Catalyst", tone: "up" },
-    { label: "Capture focus", value: "Matric + DJ", sub: "decision windows open", tone: "am" },
-    { label: "Assets", value: "400+", sub: "lookbook 20 · UGC 60 · remix", tone: "plain" },
-    { label: "UGC creators", value: "8 live", sub: "Tier 1 ×3 · Tier 2 ×3 · Tier 3 ×2", tone: "plain" },
-    { label: "Personal brand", value: "250k fol", sub: "+40% QoQ", tone: "up" },
+    { label: "Q4 target (Sep–Nov)", value: "R100k", sub: "Dance Countdown · matric 2026", tone: "gold" },
+    { label: "Bookings", value: "40+", sub: "R500 deposits · sizes 34–42", tone: "up" },
+    { label: "Capture focus", value: "Dance Countdown", sub: "late bookings + alterations NOW", tone: "am" },
+    { label: "Assets", value: "200+", sub: "15–20/wk · try-on + lookbook", tone: "plain" },
+    { label: "UGC creators", value: "8 live", sub: "6–8 nano · 1–2 micro", tone: "plain" },
+    { label: "Retargeting", value: "R12k", sub: "warm only · kill >R1,000 CPA", tone: "up" },
   ],
   month: [
-    { label: "May: The Build", value: "40+ assets", sub: "zero media spend", tone: "gold" },
-    { label: "Bookings target", value: "8–12", sub: "early-bird seed", tone: "up" },
-    { label: "UGC cohort 1", value: "3 briefed", sub: "dresses out Wk3", tone: "plain" },
-    { label: "Lookbook drop", value: "20+ images", sub: "5 hero looks", tone: "plain" },
-    { label: "Retargeting", value: "pixel warming", sub: "no cold spend", tone: "am" },
-    { label: "Pinterest pins", value: "10+", sub: "DJ keyword capture", tone: "plain" },
+    { label: "Sep: Dance Countdown", value: "LIVE", sub: "dances start late Sep", tone: "gold" },
+    { label: "Bookings target", value: "15+", sub: "deposits credited to rental", tone: "up" },
+    { label: "Deposit rate", value: "≥1–2%", sub: "per 100 views", tone: "plain" },
+    { label: "Lookbook drops", value: "3 hero looks", sub: "emerald · champagne · burgundy", tone: "plain" },
+    { label: "Retargeting", value: "R4k", sub: "warm audiences only", tone: "am" },
+    { label: "UGC cohort", value: "6–8 briefed", sub: "try-on format · 7-day window", tone: "plain" },
   ],
   week: [
-    { label: "Assets (this wk)", value: "10+", sub: "1 shoot → 12 assets", tone: "gold" },
-    { label: "Bookings", value: "4+", sub: "attr. via UTM", tone: "up" },
-    { label: "UGC due", value: "2 deliverables", sub: "10-day window", tone: "plain" },
-    { label: "Retargeting ROAS", value: "4x+", sub: "warm audiences only", tone: "up" },
-    { label: "Pipeline progress", value: "12 in flight", sub: "concept → ready", tone: "plain" },
-    { label: "Reminders sent", value: "auto", sub: "T-72h pickup · alterations", tone: "am" },
+    { label: "Assets (this wk)", value: "15–20", sub: "60/25/15 UGC/AI/pro", tone: "gold" },
+    { label: "Bookings", value: "3–5", sub: "first closes this week", tone: "up" },
+    { label: "Casting DMs", value: "3 out", sub: "Hero Girl 1 pool", tone: "plain" },
+    { label: "Email blast", value: "A/B Thu", sub: "Last Pieces on the Rail", tone: "up" },
+    { label: "WA flow", value: "≥70%", sub: "pre-filled booking", tone: "plain" },
+    { label: "Retargeting", value: "R2k", sub: "pixel warming · warm only", tone: "am" },
   ],
   day: [
-    { label: "Posts today", value: "2", sub: "1 feed · 1 story", tone: "gold" },
+    { label: "Posts today", value: "2", sub: "1 reel · 1 lookbook", tone: "gold" },
     { label: "Reminders", value: "3 auto", sub: "pickup ×2 · alteration ×1", tone: "am" },
-    { label: "DM triage", value: "112 → 9", sub: "9 high-intent", tone: "up" },
+    { label: "DM triage", value: "→ high-intent", sub: "reply < 1 hr", tone: "up" },
     { label: "Pipeline due", value: "3 approvals", sub: "editor gate today", tone: "plain" },
-    { label: "Capture status", value: "ON WINDOW", sub: "matric decision window", tone: "up" },
-    { label: "OpenClaw runs", value: "14 agents", sub: "~4.6 hrs saved today", tone: "plain" },
+    { label: "Capture status", value: "ON WINDOW", sub: "dance season · LIVE", tone: "up" },
+    { label: "Runners", value: "6 live", sub: "content · retarget · UGC · WA · hero · report", tone: "plain" },
   ],
 };
 
 export const WINDOWS: WindowRow[] = [
-  { s: 2, e: 4, label: "Quiet season — build assets", brand: "env", kind: "build" },
-  { s: 4, e: 6, label: "MATRIC EARLY-BIRD decision window", brand: "both", kind: "capture" },
-  { s: 5, e: 6, label: "Durban July dress decisions", brand: "both", kind: "capture" },
-  { s: 6, e: 6, label: "DURBAN JULY — race day (Sat)", brand: "both", kind: "capture" },
-  { s: 7, e: 8, label: "Matric late push + alterations", brand: "env", kind: "capture" },
-  { s: 8, e: 10, label: "Matric dances (Sep–Nov)", brand: "env", kind: "capture" },
-  { s: 9, e: 11, label: "Summer / gala / year-end", brand: "both", kind: "capture" },
+  { s: 0, e: 2, label: "DANCE COUNTDOWN — matric 2026 · LIVE", brand: "env", kind: "capture" },
+  { s: 1, e: 2, label: "Dance nights + proof capture", brand: "env", kind: "capture" },
+  { s: 3, e: 4, label: "Summer Glam — NYE · results · Met 30 Jan", brand: "both", kind: "capture" },
+  { s: 5, e: 5, label: "Date Night — Valentine's duo", brand: "both", kind: "capture" },
+  { s: 6, e: 7, label: "The Build — 2027 assets + cast", brand: "env", kind: "build" },
+  { s: 8, e: 10, label: "MATRIC 2027 FIRST PICK — early-bird", brand: "both", kind: "capture" },
+  { s: 9, e: 10, label: "JULY GLAM — Durban July · Sat 3 Jul", brand: "both", kind: "capture" },
+  { s: 11, e: 11, label: "Gala + winter formal", brand: "both", kind: "capture" },
 ];
 
 export const CAMPS: CampRow[] = [
-  { s: 0, e: 3, label: "Foundation: brand + inventory", brand: "env", cls: "camp-env" },
-  { s: 3, e: 5, label: "Lookbook build (AI)", brand: "env", cls: "camp-env" },
-  { s: 4, e: 6, label: "Winter Catalyst: matric + DJ", brand: "env", cls: "camp-env" },
-  { s: 5, e: 7, label: "Race-week amplification", brand: "brand", cls: "camp-brand" },
-  { s: 7, e: 8, label: "Spring urgency", brand: "env", cls: "camp-env" },
-  { s: 8, e: 10, label: "Dance-season social proof", brand: "both", cls: "camp-env" },
-  { s: 9, e: 11, label: "Summer campaign + Q4", brand: "both", cls: "camp-env" },
-  { s: 0, e: 11, label: "Always-on: weekly content", brand: "brand", cls: "camp-brand" },
-  { s: 5, e: 6, label: "DJ teaser: Pinterest-first", brand: "brand", cls: "camp-brand" },
+  { s: 0, e: 2, label: "Dance Countdown: urgency + bookings", brand: "env", cls: "camp-env" },
+  { s: 3, e: 4, label: "Summer Glam: NYE + Met styling", brand: "env", cls: "camp-env" },
+  { s: 5, e: 5, label: "Date Night Couture", brand: "env", cls: "camp-env" },
+  { s: 6, e: 7, label: "Build: lookbooks + 2027 cast", brand: "env", cls: "camp-env" },
+  { s: 8, e: 10, label: "Matric 2027 First Pick", brand: "env", cls: "camp-env" },
+  { s: 9, e: 10, label: "July Glam + race week", brand: "both", cls: "camp-env" },
+  { s: 11, e: 11, label: "Gala + winter formal", brand: "both", cls: "camp-env" },
+  { s: 0, e: 11, label: "Always-on: try-ons + Rail Report", brand: "brand", cls: "camp-brand" },
 ];
 
 export const STAGES = ["Concept", "Draft", "Editor", "Approval", "Post ready"] as const;
 
 export const PIPE: Record<string, PipeCard[]> = {
   Concept: [
-    { title: "Matric hero-look carousel", sub: "AI trend scan → 5 looks", tag: "ai", brand: "env" },
-    { title: "'What the Racecourse Wants'", sub: "DJ 2027 teaser · Pinterest-first", tag: "ai", brand: "both" },
-    { title: "GRWM reel hooks ×6", sub: "from caption bank", tag: "ai", brand: "brand" },
-    { title: "UGC brief: Tier 1 creator", sub: "try-on haul · 10-day window", tag: "ugc", brand: "env" },
+    { title: "Hero Girl 1 — journey ep 1", sub: "fitting → reveal · serial", tag: "ugc", brand: "env" },
+    { title: "'Book Your Dance' landing refresh", sub: "2026 · deadline 30 Sep", tag: "ai", brand: "env" },
+    { title: "Try-On Tuesday hooks ×6", sub: "hanger → twirl → verdict", tag: "ai", brand: "brand" },
+    { title: "UGC brief: Tier 1 creator", sub: "try-on haul · 7-day window", tag: "ugc", brand: "env" },
   ],
   Draft: [
-    { title: "Lookbook drop — emerald", sub: "20+ AI images · hero look 1", tag: "ai", brand: "env" },
-    { title: "Cape gown pins ×10", sub: "DJ keyword titles", tag: "ai", brand: "both" },
-    { title: "Booking reminder flow", sub: "T-72h pickup · auto", tag: "auto", brand: "env" },
-    { title: "Early-bird email", sub: "alterations offer · 30 Jun", tag: "ai", brand: "env" },
+    { title: "Last Pieces email — A/B", sub: "subject test · warm list", tag: "ai", brand: "env" },
+    { title: "Lookbook drop — emerald", sub: "AI · hero look 1 · #AIlookbook", tag: "ai", brand: "env" },
+    { title: "WhatsApp broadcast #1", sub: "rail filling · booking CTA", tag: "auto", brand: "env" },
+    { title: "Casting DMs ×3", sub: "Hero Girl pool · consent flow", tag: "ugc", brand: "env" },
   ],
   Editor: [
-    { title: "UGC try-on reel — creator A", sub: "human edits raw footage", tag: "ugc", brand: "env" },
-    { title: "Alteration slot reminder", sub: "auto + human copy check", tag: "auto", brand: "env" },
-    { title: "Dress line launch carousel", sub: "50 units · waitlist 1,000+", tag: "ai", brand: "brand" },
+    { title: "Hero Girl reveal edit", sub: "human edits raw footage", tag: "ugc", brand: "env" },
+    { title: "Alteration slot reminders", sub: "auto + human copy check", tag: "auto", brand: "env" },
+    { title: "Retargeting urgency static", sub: "A3 · warm audiences", tag: "ad", brand: "env" },
   ],
   Approval: [
-    { title: "Retargeting ad 6 — urgency", sub: "A3 checkout · freq ≤3.5", tag: "ad", brand: "env" },
-    { title: "Story takeover frames", sub: "race-day · brand-safe", tag: "ugc", brand: "both" },
+    { title: "Retargeting ad — urgency", sub: "kill >R1,000 CPA", tag: "ad", brand: "env" },
+    { title: "Rail Report #0 frames", sub: "weekly roundup", tag: "ugc", brand: "both" },
   ],
   "Post ready": [
-    { title: "Liquid metallic hero post", sub: "scheduled · IG+TikTok+Pin", tag: "ai", brand: "env" },
-    { title: "GRWM reel — creator B", sub: "published · 2.8x ROAS", tag: "ugc", brand: "both" },
-    { title: "Cash-flow briefing", sub: "auto · 07:00 daily", tag: "auto", brand: "both" },
+    { title: "'Book Your Dance' hero post", sub: "scheduled · IG+TikTok+Pin", tag: "ai", brand: "env" },
+    { title: "Try-on reel — CD811", sub: "published · saving well", tag: "ugc", brand: "env" },
+    { title: "Email blast — A/B live", sub: "warm list · single send", tag: "auto", brand: "env" },
   ],
 };
 
@@ -185,14 +188,14 @@ export const GALLERY: GalleryItem[] = [
     img: "/assets/look-emerald.png",
     badge: "AI · HERO 1",
     title: "Corseted Column — Emerald",
-    cap: "Matric 2027 hero · lookbook post + pin",
+    cap: "Dance-season hero · lookbook post + pin",
   },
   {
     key: "champagne",
     img: "/assets/look-champagne.png",
     badge: "AI · HERO 4",
     title: "Liquid Metallic — Champagne",
-    cap: "Durban July money look · race week",
+    cap: "The money look · reel + story takeover",
   },
   {
     key: "burgundy",
@@ -230,7 +233,7 @@ export const GALLERY: GalleryItem[] = [
     badge: "YOUR INVENTORY",
     badgeTone: "green",
     title: "Ladivine CB167 — Mauve",
-    cap: "Durban July contender · booking open",
+    cap: "Dance-season contender · booking open",
   },
   {
     key: "ps25984c",
@@ -238,7 +241,7 @@ export const GALLERY: GalleryItem[] = [
     badge: "YOUR INVENTORY",
     badgeTone: "green",
     title: "Portia & Scarlett PS25984C",
-    cap: "Race-week statement · only 1 unit",
+    cap: "Statement piece · only 1 unit",
   },
 ];
 
@@ -249,11 +252,11 @@ export interface QueueEntry {
 }
 
 export const INITIAL_QUEUE: QueueEntry[] = [
-  { tm: "13:00", pt: "PIN", tx: "Cape gowns for the races: velvet cape moment" },
-  { tm: "14:30", pt: "IG", tx: "Corseted column — emerald · carousel (5 frames)" },
-  { tm: "16:00", pt: "TIK", tx: "What the Racecourse Wants — 90s breakdown" },
-  { tm: "18:00", pt: "IG", tx: "Story: pickup reminder T-72h ×2" },
-  { tm: "19:30", pt: "FB", tx: "Retargeting A3 — urgency variant" },
+  { tm: "09:00", pt: "IG", tx: "Try-On Tuesday reel — Ladivine CD811" },
+  { tm: "11:00", pt: "WA", tx: "Broadcast #1 — the rail is filling" },
+  { tm: "14:00", pt: "IG", tx: "Lookbook — Corseted Column emerald" },
+  { tm: "16:00", pt: "MAIL", tx: "Last Pieces on the Rail — A/B blast" },
+  { tm: "18:00", pt: "IG", tx: "Story: alterations deadline countdown" },
 ];
 
 export function brandMatch(brand: "env" | "brand" | "both", filter: BrandFilter): boolean {
@@ -299,9 +302,9 @@ export function axisLabels(scale: TimeScale): string[] {
   const w = scaleWidth(scale);
   const labels: string[] = [];
   for (let i = 0; i < w; i++) {
-    if (scale === "year") labels.push(MONTHS[i]!);
-    else if (scale === "quarter") labels.push(MONTHS[3 + i]!);
-    else labels.push("MAY");
+    if (scale === "year") labels.push(MONTHS[(HORIZON_START + i) % 12]!);
+    else if (scale === "quarter") labels.push(MONTHS[(HORIZON_START + i) % 12]!);
+    else labels.push("SEP");
   }
   return labels;
 }

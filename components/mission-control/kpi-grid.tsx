@@ -15,16 +15,16 @@ export function goalToneClass(tone: GoalTone): string {
 
 export function KpiGrid({ goals }: { goals: Goal[] }) {
   return (
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+    <div className="grid grid-cols-1 gap-3 min-[430px]:grid-cols-2 sm:grid-cols-3 xl:grid-cols-6">
       {goals.map((goal) => (
         <div key={goal.label} className="goal">
-          <div className="mb-1 text-[10.5px] font-medium uppercase tracking-[0.06em] text-dim">
+          <div className="mb-1 text-[11px] font-medium uppercase tracking-[0.06em] text-dim">
             {goal.label}
           </div>
-          <div className={`text-[21px] font-bold leading-tight tracking-tight tabular-nums ${goalToneClass(goal.tone)}`}>
+          <div className={`text-[22px] font-bold leading-tight tracking-tight tabular-nums ${goalToneClass(goal.tone)}`}>
             {goal.value}
           </div>
-          <div className="mt-1 text-[10.5px] text-mut">{goal.sub}</div>
+          <div className="mt-1 text-[11px] leading-[1.4] text-mut">{goal.sub}</div>
         </div>
       ))}
     </div>

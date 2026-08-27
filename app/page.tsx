@@ -17,14 +17,14 @@ export default function Home() {
       </div>
 
       <p className="max-w-xl text-center text-base leading-relaxed text-mut">
-        The pilot marketing-operations hub for the Winter Catalyst: plan capture windows, brief
+        The marketing-operations hub for the Dance Countdown season: plan capture windows, brief
         campaigns once, co-write copy with AI, generate hero looks, and schedule sends — with a
         human approval gate on everything that ships.
       </p>
 
       <div className="grid w-full max-w-3xl grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {[
-          { icon: CalendarRange, title: "Capture calendar", sub: "Matric · Durban July · dances" },
+          { icon: CalendarRange, title: "Capture calendar", sub: "Matric 2026 · July · Met" },
           { icon: Layers, title: "Pipeline", sub: "Concept → Post ready" },
           { icon: Sparkles, title: "AI copy + images", sub: "DeepSeek · FLUX · Gemini" },
           { icon: Send, title: "Scheduled sends", sub: "Email queue with webhook events" },
@@ -59,7 +59,7 @@ export default function Home() {
       </div>
 
       <p className="text-center text-[11px] text-dim">
-        Pilot build for the Envogue owner — Winter Catalyst 2027. Human-in-the-loop: AI drafts, a human approves, only
+        Pilot build for the Envogue owner — Dance Countdown 2026. Human-in-the-loop: AI drafts, a human approves, only
         then it posts.
       </p>
     </main>

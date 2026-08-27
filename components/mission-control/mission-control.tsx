@@ -38,7 +38,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
   const [theme, setTheme] = useState<"dark" | "light">("dark");
 
   const [composer, setComposer] = useState(
-    "The corseted column is the matric look of 2027. Early-bird bookings include complimentary alterations before 30 June. Sizes 34–42.",
+    "The corseted column is the matric look of 2026. Book before 30 September and alterations are on us. Sizes 34–42. First choice goes to the first to book.",
   );
   const [targets, setTargets] = useState<string[]>(["IG Feed", "Reels", "TikTok", "Pinterest"]);
   const [recipient, setRecipient] = useState("");
@@ -265,17 +265,17 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
   const captionBank = CAPTION_BANK;
 
   return (
-    <main className="mx-auto w-full max-w-[1240px] px-7 pb-20">
+    <main className="mx-auto w-full max-w-[1240px] px-4 pb-[max(5rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:px-7">
       {/* ── header ── */}
       <header className="mc-header">
-        <div className="flex items-center gap-[11px]">
-          <div className="flex h-8 w-8 items-center justify-center overflow-hidden rounded-[9px] bg-white shadow-[0_2px_8px_rgba(154,123,47,0.35)]">
+        <div className="flex min-w-0 items-center gap-[11px]">
+          <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-[9px] bg-white shadow-[0_2px_8px_rgba(154,123,47,0.35)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/assets/envogue-logo.jpg" alt="Envogue" className="h-full w-full object-contain" />
           </div>
-          <div>
-            <h1 className="text-[19px] font-bold tracking-[-0.02em] text-ink">Envogue — Marketing Mission Control</h1>
-            <span className="mt-0.5 block text-[11.5px] text-mut">
+          <div className="min-w-0">
+            <h1 className="text-[16px] font-bold leading-tight tracking-[-0.02em] text-ink sm:text-[19px]">Envogue — Marketing Mission Control</h1>
+            <span className="mt-0.5 block truncate text-[11.5px] text-mut">
               {userName ? `${userName} · ` : ""}
               <span className="font-mono text-[11px] text-mut">{userEmail}</span>
             </span>
@@ -316,12 +316,12 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
 
       {/* ── time horizon ── */}
       <div className="mb-4 mt-[18px] flex flex-wrap items-center justify-between gap-3">
-        <div className="seg" role="group" aria-label="Time horizon">
+        <div className="seg max-w-full overflow-x-auto" role="group" aria-label="Time horizon">
           {(["year", "quarter", "month", "week", "day"] as TimeScale[]).map((s) => (
             <button
               key={s}
               type="button"
-              className={`${scale === s ? "on" : ""} !px-5 !py-[7px] !text-[12.5px] !font-semibold`}
+              className={`${scale === s ? "on" : ""} !px-3 !py-[7px] !text-[12px] !font-semibold sm:!px-5 sm:!text-[12.5px]`}
               onClick={() => setScale(s)}
             >
               {s.toUpperCase()}
@@ -397,7 +397,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
           </div>
           <div className="flex flex-wrap items-center gap-2.5">
             <input
-              className="mc-input w-64"
+              className="mc-input w-full sm:w-64"
               type="email"
               value={recipient}
               onChange={(e) => setRecipient(e.target.value)}
@@ -439,7 +439,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
       {/* ── editor modal ── */}
       {modal ? (
         <div
-          className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-6 backdrop-blur-[8px]"
+          className="fixed inset-0 z-40 flex items-center justify-center bg-black/40 p-4 backdrop-blur-[8px] sm:p-6"
           onClick={closeModal}
           role="dialog"
           aria-modal="true"
