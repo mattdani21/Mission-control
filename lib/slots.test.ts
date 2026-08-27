@@ -4,7 +4,7 @@ import { SLOTS, SLOT_IDS } from "./slots";
 
 describe("slot templates", () => {
   it("defines the brand slots", () => {
-    expect(SLOT_IDS).toEqual(["envogue", "empire", "tessera"]);
+    expect(SLOT_IDS).toEqual(["envogue", "tessera"]);
   });
 
   it("every slot is fully populated", () => {
@@ -45,11 +45,6 @@ describe("slot templates", () => {
     expect(SLOTS.envogue.brandName).toBe("Envogue");
     expect(SLOTS.envogue.windows[0]?.label).toContain("DANCE COUNTDOWN");
     expect(SLOTS.envogue.goals.year[0]?.value).toBe("150+");
-  });
-
-  it("empire slot carries the flywheel economics", () => {
-    expect(SLOTS.empire.brandName).toBe("Empire");
-    expect(SLOTS.empire.goals.year[0]?.value).toBe("R4.8M");
   });
 
   it("tessera slot carries the AI-employee pilot economics", () => {
