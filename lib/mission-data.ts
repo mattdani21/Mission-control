@@ -43,6 +43,26 @@ export interface PipeCard {
   /** Creative-iteration variable this variant changes (Ac Hampton test-map
    *  discipline): HOOK / FORMAT / FACE / ARGUMENT, or PROVEN for the winner. */
   variable?: "HOOK" | "FORMAT" | "FACE" | "ARGUMENT" | "PROVEN";
+  /** Blocked reason — card waits (founder gate, consent, dependency) instead
+   *  of advancing; tapping a blocked card unblocks it and logs the decision. */
+  blocked?: string;
+}
+
+/** A recorded decision in the campaign brain (source + reasoning + rollback). */
+export interface DecisionEntry {
+  ts: string;
+  action: string;
+  state: string;
+  source: string;
+  rollback: string;
+  decision: "approve" | "edit" | "reject";
+}
+
+/** Dated channel report feeding the final campaign report. */
+export interface ReportEntry {
+  date: string;
+  channel: string;
+  summary: string;
 }
 
 export interface GalleryItem {

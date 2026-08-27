@@ -7,14 +7,17 @@ import {
   CHANNELS,
   STAGES,
   type BrandFilter,
+  type DecisionEntry,
   type GalleryItem,
   type PipeCard,
   type QueueEntry,
+  type ReportEntry,
   type TimeScale,
 } from "../../lib/mission-data";
 import { SLOTS, SLOT_IDS, type ProductSlot, type SlotConfig, type SlotId } from "../../lib/slots";
 import { LogoutButton } from "../logout-button";
 import { createCampaign, scheduleSend, streamDraft, tomorrowNineSast } from "./api";
+import { CampaignMemory } from "./campaign-memory";
 import { GenerateModal } from "./generate-modal";
 import { KpiGrid } from "./kpi-grid";
 import { CaptureCalendar, Gallery, Pipeline, TimeContext } from "./sections";
@@ -137,6 +140,37 @@ function resolveView(pick: ActiveSlot, productId: string): SlotConfig {
 }
 
 /** Resolve the active view: a brand's full platform, or the merged ALL view. */
+const shortDate = () =>
+  new Date().toLocaleDateString("en-GB", { day: "2-digit", month: "short" });
+
+interface Memory {
+  decisions: DecisionEntry[];
+  reports: ReportEntry[];
+}
+
+function loadMemory(pick: ActiveSlot): Memory {
+  const seeds: Memory =
+    pick === "all"
+      ? {
+          decisions: SLOT_IDS.flatMap((sid) => SLOTS[sid].decisions ?? []),
+          reports: SLOT_IDS.flatMap((sid) => SLOTS[sid].reports ?? []),
+        }
+      : {
+          decisions: SLOTS[pick].decisions ?? [],
+          reports: SLOTS[pick].reports ?? [],
+        };
+  if (typeof window === "undefined") return seeds;
+  const saved = window.localStorage.getItem(`mc-memory-${pick}`);
+  if (!saved) return seeds;
+  try {
+    const parsed = JSON.parse(saved) as Memory;
+    if (!Array.isArray(parsed.decisions) || !Array.isArray(parsed.reports)) return seeds;
+    return parsed;
+  } catch {
+    return seeds;
+  }
+}
+
 function makeView(pick: ActiveSlot): SlotConfig {
   if (pick !== "all") return SLOTS[pick];
   return {
@@ -227,6 +261,35 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
     setTargets((prev) => (prev.includes(channel) ? prev.filter((c) => c !== channel) : [...prev, channel]));
   };
 
+  const [memory, setMemory] = useState<Memory>(() => loadMemory(activeSlot));
+  const saveMemory = useCallback(
+    (next: Memory) => {
+      setMemory(next);
+      window.localStorage.setItem(`mc-memory-${activeSlot}`, JSON.stringify(next));
+    },
+    [activeSlot],
+  );
+  const addDecision = useCallback(
+    (d: DecisionEntry) => {
+      setMemory((prev) => {
+        const next = { ...prev, decisions: [d, ...prev.decisions] };
+        window.localStorage.setItem(`mc-memory-${activeSlot}`, JSON.stringify(next));
+        return next;
+      });
+    },
+    [activeSlot],
+  );
+  const addReport = useCallback(
+    (r: ReportEntry) => {
+      setMemory((prev) => {
+        const next = { ...prev, reports: [r, ...prev.reports] };
+        window.localStorage.setItem(`mc-memory-${activeSlot}`, JSON.stringify(next));
+        return next;
+      });
+    },
+    [activeSlot],
+  );
+
   const goals = useMemo(() => view.goals[scale], [view, scale]);
 
   const switchSlot = (pick: ActiveSlot) => {
@@ -234,6 +297,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
     window.localStorage.setItem("mc-slot", pick);
     setActiveSlot(pick);
     setSlotMenuOpen(false);
+    setMemory(loadMemory(pick));
     const storedProduct = window.localStorage.getItem(`mc-product-${pick}`) ?? "all";
     setProductId(storedProduct);
     setScale("year");
@@ -374,15 +438,30 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
 
   /* ── Generate: opens the Gemini pop-out (prompt → preview → add to gallery) ── */
 
-  /* ── Pipeline: click to advance a card; Post ready promotes the winner
-     back to Winner (closes the creative-iteration loop) ── */
+  /* ── Pipeline: click to advance a card; blocked cards unblock on tap;
+     Post ready promotes the winner back to Winner (closes the loop) ── */
   const handleAdvance = useCallback(
     (stage: string, title: string) => {
+      const card = pipeline[stage]?.find((c) => c.title === title);
+      if (!card) return;
+      if (card.blocked) {
+        setPipeline((prev) => ({
+          ...prev,
+          [stage]: (prev[stage] ?? []).map((c) => (c.title === title ? { ...c, blocked: undefined } : c)),
+        }));
+        addDecision({
+          ts: shortDate(),
+          action: `Unblocked — ${title}`,
+          state: "Unblocked",
+          source: "human view",
+          rollback: "Re-block with new reason",
+          decision: "approve",
+        });
+        return;
+      }
       setPipeline((prev) => {
         const idx = STAGES.indexOf(stage as (typeof STAGES)[number]);
         if (idx < 0) return prev;
-        const card = (prev[stage] ?? []).find((c) => c.title === title);
-        if (!card) return prev;
         const next: Record<string, PipeCard[]> = {
           ...prev,
           [stage]: (prev[stage] ?? []).filter((c) => c.title !== title),
@@ -397,17 +476,37 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
         return next;
       });
     },
-    [],
+    [pipeline, addDecision],
   );
 
   /* ── Editor modal actions ── */
   const closeModal = () => setModal(null);
 
   const approveModal = () => {
+    if (modal) {
+      addDecision({
+        ts: shortDate(),
+        action: `Approved — ${modal.item.title}`,
+        state: "Approved",
+        source: "editor gate",
+        rollback: "Pull from Post ready",
+        decision: "approve",
+      });
+    }
     setModal((prev) => (prev ? { ...prev, approved: true, stage: "Editor → Post ready" } : prev));
   };
 
   const postModal = () => {
+    if (modal) {
+      addDecision({
+        ts: shortDate(),
+        action: `Posted — ${modal.item.title}`,
+        state: "Posted",
+        source: "publish queue",
+        rollback: "Remove / re-schedule",
+        decision: "approve",
+      });
+    }
     setModal((prev) => {
       if (!prev) return prev;
       setQueue((q) => [
@@ -601,6 +700,14 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
         windows={view.windows}
         camps={view.camps}
         calHint={view.calHint[scale]}
+      />
+
+      {/* ── campaign memory: decision log + channel reports ── */}
+      <CampaignMemory
+        decisions={memory.decisions}
+        reports={memory.reports}
+        onAddDecision={addDecision}
+        onAddReport={addReport}
       />
 
       {/* ── gallery ── */}

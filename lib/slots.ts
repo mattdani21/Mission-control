@@ -18,10 +18,12 @@
 
 import type {
   CampRow,
+  DecisionEntry,
   GalleryItem,
   Goal,
   PipeCard,
   QueueEntry,
+  ReportEntry,
   TimeScale,
   WindowRow,
 } from "./mission-data";
@@ -78,6 +80,9 @@ export interface SlotConfig {
   gallery: GalleryItem[];
   /** Multi-product companies expose a product toggle instead of ALL/CLIENT/PERSONAL. */
   products?: ProductSlot[];
+  /** Campaign brain memory — recorded decisions + dated channel reports. */
+  decisions?: DecisionEntry[];
+  reports?: ReportEntry[];
 }
 
 const GENERIC_PROMPT =
@@ -190,7 +195,7 @@ const ENVOGUE: SlotConfig = {
       { title: "Hook: 'last size in your dress'", sub: "same argument · new opening", tag: "ai", brand: "env", variable: "HOOK" },
       { title: "Hook: mom's 1986 dance story", sub: "pattern interrupt · same message", tag: "ai", brand: "brand", variable: "HOOK" },
       { title: "Format: founder-to-camera", sub: "15s · same script", tag: "ai", brand: "env", variable: "FORMAT" },
-      { title: "Face: Hero Girl 1 — same message", sub: "fight ad fatigue on the proven line", tag: "ugc", brand: "env", variable: "FACE" },
+      { title: "Face: Hero Girl 1 — same message", sub: "fight ad fatigue on the proven line", tag: "ugc", brand: "env", variable: "FACE", blocked: "awaiting founder approval of cast" },
       { title: "Argument: alterations on us", sub: "new reason · same buyer", tag: "ai", brand: "env", variable: "ARGUMENT" },
     ],
     Draft: [
@@ -200,7 +205,7 @@ const ENVOGUE: SlotConfig = {
       { title: "Casting DMs ×3", sub: "Hero Girl pool · consent flow", tag: "ugc", brand: "env" },
     ],
     Editor: [
-      { title: "Hero Girl reveal edit", sub: "human edits raw footage", tag: "ugc", brand: "env" },
+      { title: "Hero Girl reveal edit", sub: "human edits raw footage", tag: "ugc", brand: "env", blocked: "awaiting POPIA + guardian consent" },
       { title: "Alteration slot reminders", sub: "auto + human copy check", tag: "auto", brand: "env" },
       { title: "Retargeting ad — urgency", sub: "kill >R1,000 CPA", tag: "ad", brand: "env" },
       { title: "Rail Report #0 frames", sub: "weekly roundup", tag: "ugc", brand: "both" },
@@ -290,6 +295,15 @@ const ENVOGUE: SlotConfig = {
       title: "Portia & Scarlett PS25984C",
       cap: "Statement piece · only 1 unit",
     },
+  ],
+  decisions: [
+    { ts: "26 Aug", action: "Hero Girl casting — DM outreach", state: "Approved", source: "Casting DMs (file 22) + enquiry list", rollback: "Hold fittings; no media until consent", decision: "approve" },
+    { ts: "26 Aug", action: "R25k season budget", state: "Approved", source: "Meeting outcomes (file 19)", rollback: "Freeze retargeting; kill >R1,000 CPA", decision: "approve" },
+    { ts: "27 Aug", action: "Image provider swap → Gemini only", state: "Approved", source: "Owner direction + QA fails", rollback: "Re-enable fallback provider", decision: "approve" },
+  ],
+  reports: [
+    { date: "24 Aug", channel: "All", summary: "Pre-season baseline: rail stocked, enquiry list warm, dance window opens Sep 1. Zero media spend until approval." },
+    { date: "27 Aug", channel: "IG + WA", summary: "Launch assets shipped: 4 Gemini heroes, Book Your Dance composer copy, casting DMs drafted. Wk1 send plan queued." },
   ],
 };
 
@@ -785,6 +799,13 @@ const TESSERA: SlotConfig = {
       ],
     },
   ],
+  decisions: [
+    { ts: "26 Aug", action: "Golden-set eval scope (200 docs)", state: "Approved", source: "shinji ROADMAP M0.1", rollback: "Reduce to 100 docs", decision: "approve" },
+    { ts: "27 Aug", action: "Public launch gated on eval vs human", state: "Approved", source: "eval-first doctrine (shinji README)", rollback: "Launch without baseline", decision: "approve" },
+  ],
+  reports: [
+    { date: "24 Aug", channel: "Engineering", summary: "M0.2 skeleton complete: ingest → classify → route with confidence gates; append-only ledger; CLI + harness green." },
+  ],
 };
 
 /* ─────────────── DECILE — AI for regulated finance ─────────────── */
@@ -925,6 +946,12 @@ const DECILE: SlotConfig = {
       cap: "every output logged + reviewable",
     },
   ],
+  decisions: [
+    { ts: "27 Aug", action: "Pricing honesty rule — say renting wins below crossover", state: "Approved", source: "pricing_model.md", rollback: "Remove crossover disclosure", decision: "approve" },
+  ],
+  reports: [
+    { date: "24 Aug", channel: "Demo", summary: "Kaggle P100 run: 1,000 ex / 3 ep, eval 0.90 / 0.855 — real numbers recorded before GTM assets." },
+  ],
 };
 
 /* ─────────────── ITRAIN — AI training + compliance ─────────────── */
@@ -1064,6 +1091,12 @@ const ITRAIN: SlotConfig = {
       cap: "4-week plans · auto-progression · PT approval",
     },
   ],
+  decisions: [
+    { ts: "24 Aug", action: "Model router cap — $10/PT/mo", state: "Approved", source: "ops-pt-platform GOAL Phase 2", rollback: "Raise cap after pilot", decision: "approve" },
+  ],
+  reports: [
+    { date: "24 Aug", channel: "Engineering", summary: "Phases 0–3 shipped: monorepo + auth, data layer, model router, Morning Brief; ≥80% test coverage." },
+  ],
 };
 
 /* ─────────────── GAPOS — goals operating system ─────────────── */
@@ -1169,7 +1202,7 @@ const GAPOS: SlotConfig = {
     Editor: [
       { title: "Course review — human", sub: "citation gate", tag: "ugc", brand: "env" },
       { title: "Completion reminders", sub: "auto · day-based", tag: "auto", brand: "both" },
-      { title: "Course gate — founder", sub: "sign before publish", tag: "ad", brand: "env" },
+      { title: "Course gate — founder", sub: "sign before publish", tag: "ad", brand: "env", blocked: "awaiting founder sign-off" },
     ],
     "Post ready": [
       { title: "Course launch post", sub: "X + LinkedIn", tag: "ai", brand: "both" },
@@ -1202,6 +1235,12 @@ const GAPOS: SlotConfig = {
       title: "Verified Completion",
       cap: "practice checkmarks · streaks · citations",
     },
+  ],
+  decisions: [
+    { ts: "24 Aug", action: "Live-eval gate as launch gate", state: "Approved", source: "orchestrator registry notes", rollback: "Ship without gate", decision: "approve" },
+  ],
+  reports: [
+    { date: "24 Aug", channel: "Engineering", summary: "pnpm monorepo + Postgres/MinIO + durable workers; first courses generating; live-eval gate in progress." },
   ],
 };
 
@@ -1424,7 +1463,7 @@ const EMPYREAN: SlotConfig = {
           { title: "Lookbook drop — emerald", sub: "AI · #AIlookbook", tag: "ai", brand: "env" },
         ],
         Editor: [
-          { title: "Hero reel edit", sub: "human gate", tag: "ugc", brand: "env" },
+          { title: "Hero reel edit", sub: "human gate", tag: "ugc", brand: "env", blocked: "awaiting POPIA + guardian consent" },
           { title: "Retarget ad — urgency", sub: "kill >R1,000 CPA", tag: "ad", brand: "env" },
         ],
         "Post ready": [
@@ -1577,6 +1616,12 @@ const EMPYREAN: SlotConfig = {
         },
       ],
     },
+  ],
+  decisions: [
+    { ts: "26 Aug", action: "Lead engine rate limit — 3/day", state: "Approved", source: "empyrean-consult GOAL M2", rollback: "Raise behind auth", decision: "approve" },
+  ],
+  reports: [
+    { date: "24 Aug", channel: "Site", summary: "Lead form live; AI diagnosis → proposal sections drafted; pytest suite green in CI (Gemini/Resend mocked)." },
   ],
 };
 

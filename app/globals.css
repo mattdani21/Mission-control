@@ -511,6 +511,29 @@ body {
     background: var(--surface-2);
   }
 
+  /* Blocked pipeline cards — waiting on a gate (founder, consent, dependency) */
+  .pcard.blocked {
+    border-color: color-mix(in srgb, var(--rd) 55%, var(--line));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--rd) 12%, transparent);
+  }
+  .blocked-chip {
+    display: inline-flex;
+    align-items: center;
+    max-width: 100%;
+    margin-top: 7px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 8.5px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: color-mix(in srgb, var(--rd) 85%, var(--ink));
+    border: 1px solid color-mix(in srgb, var(--rd) 40%, var(--line));
+    background: color-mix(in srgb, var(--rd) 8%, transparent);
+    border-radius: 999px;
+    padding: 2px 8px;
+  }
+
   .tag {
     position: absolute;
     top: 9px;

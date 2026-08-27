@@ -192,11 +192,13 @@ export function Pipeline({
                   onClick={() => onAdvance(stage, card.title)}
                   className={`pcard group block w-full text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color-mix(in_srgb,var(--accent)_45%,transparent)] focus-visible:ring-offset-2 focus-visible:ring-offset-surface-2 active:translate-y-0 active:scale-[0.98] ${
                     last ? "done" : ""
-                  } ${card.variable === "PROVEN" ? "proven" : ""}`}
+                  } ${card.variable === "PROVEN" ? "proven" : ""} ${card.blocked ? "blocked" : ""}`}
                   aria-label={
-                    last
-                      ? `${card.title} — promote to Winner`
-                      : `${card.title} — advance to next stage`
+                    card.blocked
+                      ? `${card.title} — unblock`
+                      : last
+                        ? `${card.title} — promote to Winner`
+                        : `${card.title} — advance to next stage`
                   }
                 >
                   <span className="flex flex-wrap items-center gap-1">
@@ -209,6 +211,7 @@ export function Pipeline({
                       </span>
                     ) : null}
                   </span>
+                  {card.blocked ? <span className="blocked-chip">⛔ blocked · {card.blocked}</span> : null}
                   <div className="mb-0.5 pr-4 text-[12px] font-semibold text-ink">{card.title}</div>
                   <div className="text-[10.5px] leading-[1.35] text-mut">{card.sub}</div>
                   <div className="mt-2 inline-flex items-center gap-1 rounded-[5px] bg-surface-2 px-[6px] py-[2px] text-[8px] font-bold tracking-[0.07em] text-dim">

@@ -41,7 +41,9 @@ describe("slot templates", () => {
       expect(slot.pipe["Test map"]?.some((c) => c.variable === "FORMAT")).toBe(true);
       expect(slot.pipe["Test map"]?.some((c) => c.variable === "FACE")).toBe(true);
       expect(slot.pipe["Test map"]?.some((c) => c.variable === "ARGUMENT")).toBe(true);
-      // Calendar rows stay inside the 12-month axis.
+      // Campaign brain memory — every slot seeds decisions + channel reports.
+      expect(slot.decisions?.length ?? 0).toBeGreaterThan(0);
+      expect(slot.reports?.length ?? 0).toBeGreaterThan(0);
       for (const w of slot.windows) {
         expect(w.s).toBeGreaterThanOrEqual(0);
         expect(w.e).toBeLessThanOrEqual(11);
