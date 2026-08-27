@@ -4,7 +4,7 @@ import { SLOTS, SLOT_IDS } from "./slots";
 
 describe("slot templates", () => {
   it("defines the brand slots", () => {
-    expect(SLOT_IDS).toEqual(["envogue", "tessera", "decile", "itrain", "gapos"]);
+    expect(SLOT_IDS).toEqual(["envogue", "tessera", "decile", "itrain", "gapos", "empyrean"]);
   });
 
   it("every slot is fully populated", () => {
@@ -78,12 +78,14 @@ describe("slot templates", () => {
     }
   });
 
-  it("decile / itrain / gapos slots are seeded", () => {
+  it("decile / itrain / gapos / empyrean slots are repo-grounded", () => {
     expect(SLOTS.decile.brandName).toBe("Decile AI");
-    expect(SLOTS.decile.goals.year[0]?.value).toBe("R1.8M");
+    expect(SLOTS.decile.goals.year[1]?.value).toBe("R361k/mo");
     expect(SLOTS.itrain.brandName).toBe("iTrain");
-    expect(SLOTS.itrain.goals.year[0]?.value).toBe("5,000");
+    expect(SLOTS.itrain.goals.year[1]?.value).toBe("<$10/PT/mo");
     expect(SLOTS.gapos.brandName).toBe("GapOS");
-    expect(SLOTS.gapos.goals.year[0]?.value).toBe("30");
+    expect(SLOTS.gapos.goals.year[1]?.value).toBe("25");
+    expect(SLOTS.empyrean.brandName).toBe("Empyrean");
+    expect(SLOTS.empyrean.products?.map((p) => p.id)).toEqual(["catalyst", "flywheel"]);
   });
 });
