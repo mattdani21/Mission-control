@@ -37,6 +37,8 @@ export interface SlotConfig {
   id: SlotId;
   label: string;
   brandName: string;
+  /** Header logo asset (per-brand). */
+  logo: string;
   tagline: string;
   composerDefault: string;
   defaultPrompt: string;
@@ -64,6 +66,7 @@ const ENVOGUE: SlotConfig = {
   id: "envogue",
   label: "ENVOGUE",
   brandName: "Envogue",
+  logo: "/assets/envogue-logo.jpg",
   tagline: "Empyrean Consult · plan the year · capture the market · publish everywhere",
   composerDefault:
     "The corseted column is the matric look of 2026. Book before 30 September and alterations are on us. Sizes 34–42. First choice goes to the first to book.",
@@ -265,6 +268,7 @@ const TESSERA: SlotConfig = {
   id: "tessera",
   label: "TESSERA",
   brandName: "Tessera",
+  logo: "/assets/tessera-logo.png",
   tagline: "Empyrean · AI employees · bounded tasks · pilot → ARR",
   composerDefault:
     "Tessera: an AI employee that owns a bounded task end-to-end. One pilot, one month — if it doesn't earn its payroll, you cut it.",

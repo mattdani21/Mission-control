@@ -12,6 +12,7 @@ describe("slot templates", () => {
       const slot = SLOTS[id];
       expect(slot.label.length).toBeGreaterThan(0);
       expect(slot.brandName.length).toBeGreaterThan(0);
+      expect(slot.logo.startsWith("/assets/")).toBe(true);
       expect(slot.composerDefault.length).toBeGreaterThan(10);
       expect(slot.defaultPrompt.length).toBeGreaterThan(20);
       // Strategy grounding — human view, must be seeded for every brand.

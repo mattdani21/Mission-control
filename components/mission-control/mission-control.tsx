@@ -96,6 +96,7 @@ function makeView(pick: ActiveSlot): SlotConfig {
     ...SLOTS.envogue,
     label: "ALL",
     brandName: "All companies",
+    logo: "/assets/all-logo.png",
     tagline: "Empyrean · full portfolio · every brand, same machine",
     composerDefault: "Portfolio view — pick a brand to compose for that brand.",
     timeContext: {
@@ -356,7 +357,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
         <div className="flex min-w-0 items-center gap-[11px]">
           <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center overflow-hidden rounded-[9px] bg-white shadow-[0_2px_8px_rgba(154,123,47,0.35)]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/assets/envogue-logo.jpg" alt="Envogue" className="h-full w-full object-contain" />
+            <img src={view.logo} alt={view.brandName} className="h-full w-full object-contain" />
           </div>
           <div className={panelOpen ? "min-w-0" : "hidden min-w-0"}>
             <h1 className="text-[16px] font-bold leading-tight tracking-[-0.02em] text-ink sm:text-[19px]">
