@@ -1,12 +1,10 @@
 /**
- * Affordable photorealistic image generation for Mission Control.
+ * Photorealistic image generation for Mission Control — Gemini 2.5 Flash
+ * Image ("Nano Banana") only. DeepInfra FLUX was removed per owner
+ * direction (Envogue runs Gemini primary: photorealistic, flash-tier
+ * affordable, watermark-free).
  *
- * Default order: DeepInfra FLUX.1-dev primary, Gemini 2.5 Flash Image
- * ("Nano Banana") fallback. Set IMAGE_PROVIDER=gemini to make Gemini the
- * primary (DeepInfra stays as fallback) — the Envogue pilot runs with
- * Gemini primary (photorealistic, flash-tier affordable, watermark-free).
- * Both keys stay server-side; the browser only talks to our proxy route.
- *
+ * The key stays server-side; the browser only talks to our proxy route.
  * The route /api/ai/image returns { image: "<data URL>", provider, model }.
  */
 
@@ -27,15 +25,8 @@ export class ImageGenError extends Error {
   }
 }
 
-const DEEPINFRA_URL = "https://api.deepinfra.com/v1/images/generations";
-const DEEPINFRA_MODEL = "black-forest-labs/FLUX.1-dev";
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent";
-
-interface DeepInfraResponse {
-  images?: Array<{ url?: string; b64_json?: string }>;
-  error?: { message?: string };
-}
 
 interface GeminiResponse {
   candidates?: Array<{
@@ -44,54 +35,6 @@ interface GeminiResponse {
     };
   }>;
   error?: { message?: string };
-}
-
-async function fetchBytes(url: string): Promise<{ bytes: Uint8Array; mime: string }> {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new ImageGenError(`image download failed (HTTP ${response.status})`, response.status);
-  }
-  const bytes = new Uint8Array(await response.arrayBuffer());
-  const mime = response.headers.get("content-type")?.split(";")[0]?.trim() || "image/png";
-  return { bytes, mime };
-}
-
-async function deepInfraImage(prompt: string, apiKey: string): Promise<GeneratedImage> {
-  const response = await fetch(DEEPINFRA_URL, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: process.env.DEEPINFRA_MODEL ?? DEEPINFRA_MODEL,
-      prompt,
-      image_size: "1024x1024",
-    }),
-  });
-
-  if (!response.ok) {
-    const detail = await response.text().catch(() => "");
-    throw new ImageGenError(
-      `DeepInfra rejected the request (HTTP ${response.status}): ${detail.slice(0, 200)}`,
-      response.status,
-    );
-  }
-
-  const body = (await response.json()) as DeepInfraResponse;
-  const item = body.images?.[0];
-  if (body.error?.message || !item) {
-    throw new ImageGenError(`DeepInfra returned no image: ${body.error?.message ?? "empty result"}`);
-  }
-  if (item.b64_json) {
-    return { image: `data:image/png;base64,${item.b64_json}`, provider: "deepinfra", model: process.env.DEEPINFRA_MODEL ?? DEEPINFRA_MODEL };
-  }
-  if (item.url) {
-    const { bytes, mime } = await fetchBytes(item.url);
-    const b64 = Buffer.from(bytes).toString("base64");
-    return { image: `data:${mime};base64,${b64}`, provider: "deepinfra", model: process.env.DEEPINFRA_MODEL ?? DEEPINFRA_MODEL };
-  }
-  throw new ImageGenError("DeepInfra returned an unexpected response (no image).");
 }
 
 async function geminiImage(prompt: string, apiKey: string): Promise<GeneratedImage> {
@@ -125,45 +68,24 @@ async function geminiImage(prompt: string, apiKey: string): Promise<GeneratedIma
 }
 
 /**
- * Generate an image. Provider order follows IMAGE_PROVIDER:
- *   - "gemini"  → Gemini 2.5 Flash Image first, DeepInfra FLUX fallback
- *   - unset (or anything else) → DeepInfra FLUX first, Gemini fallback
- * Throws ImageGenError when no provider is configured (503) or all
- * providers failed (502 details preserved on the error message).
+ * Generate an image via Gemini 2.5 Flash Image. Requires GOOGLE_API_KEY.
+ * Throws ImageGenError when no key is configured (503) or the provider
+ * fails (502 details preserved on the error message).
  */
 export async function generateImage(prompt: string): Promise<GeneratedImage> {
-  const deepinfraKey = process.env.DEEPINFRA_API_KEY;
   const googleKey = process.env.GOOGLE_API_KEY;
 
-  if (!deepinfraKey && !googleKey) {
+  if (!googleKey) {
+    throw new ImageGenError("No image provider configured — set GOOGLE_API_KEY.");
+  }
+
+  try {
+    return await geminiImage(prompt, googleKey);
+  } catch (err) {
+    logger.warn({ err }, "image generation failed");
     throw new ImageGenError(
-      "No image provider configured — set DEEPINFRA_API_KEY or GOOGLE_API_KEY.",
+      `Image provider failed: ${err instanceof Error ? err.message : String(err)}`,
+      502,
     );
   }
-
-  const geminiFirst =
-    (process.env.IMAGE_PROVIDER ?? "").trim().toLowerCase() === "gemini";
-
-  const attempts: Array<() => Promise<GeneratedImage>> = [];
-  if (geminiFirst) {
-    if (googleKey) attempts.push(() => geminiImage(prompt, googleKey!));
-    if (deepinfraKey) attempts.push(() => deepInfraImage(prompt, deepinfraKey!));
-  } else {
-    if (deepinfraKey) attempts.push(() => deepInfraImage(prompt, deepinfraKey!));
-    if (googleKey) attempts.push(() => geminiImage(prompt, googleKey!));
-  }
-
-  let lastError: unknown = null;
-  for (const attempt of attempts) {
-    try {
-      return await attempt();
-    } catch (err) {
-      lastError = err;
-      logger.warn({ err }, "image provider attempt failed; trying next");
-    }
-  }
-  throw new ImageGenError(
-    `Image providers failed: ${lastError instanceof Error ? lastError.message : String(lastError)}`,
-    502,
-  );
 }

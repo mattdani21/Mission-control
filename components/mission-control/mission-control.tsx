@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Moon, Sun } from "lucide-react";
+import { ChevronDown, ChevronUp, Moon, Sun } from "lucide-react";
 
 import {
   CAPTION_BANK,
@@ -36,6 +36,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
   const [scale, setScale] = useState<TimeScale>("year");
   const [brand, setBrand] = useState<BrandFilter>("all");
   const [theme, setTheme] = useState<"dark" | "light">("dark");
+  const [panelOpen, setPanelOpen] = useState(true);
 
   const [composer, setComposer] = useState(
     "The corseted column is the matric look of 2026. Book before 30 September and alterations are on us. Sizes 34–42. First choice goes to the first to book.",
@@ -273,7 +274,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/assets/envogue-logo.jpg" alt="Envogue" className="h-full w-full object-contain" />
           </div>
-          <div className="min-w-0">
+          <div className={panelOpen ? "min-w-0" : "hidden min-w-0"}>
             <h1 className="text-[16px] font-bold leading-tight tracking-[-0.02em] text-ink sm:text-[19px]">Envogue — Marketing Mission Control</h1>
             <span className="mt-0.5 block truncate text-[11.5px] text-mut">
               {userName ? `${userName} · ` : ""}
@@ -282,35 +283,49 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
-          <div className="seg" role="group" aria-label="Brand filter">
-            <button type="button" className={brand === "all" ? "on" : ""} onClick={() => setBrand("all")}>
-              ALL
-            </button>
-            <button type="button" className={brand === "env" ? "on" : ""} onClick={() => setBrand("env")}>
-              ENVOGUE
-            </button>
-            <button type="button" className={brand === "brand" ? "on" : ""} onClick={() => setBrand("brand")}>
-              PERSONAL
-            </button>
-          </div>
-          <div className="flex flex-wrap items-center gap-[5px]" aria-hidden>
-            <span className="plat"><i className="ig" />IG</span>
-            <span className="plat"><i className="tk" />TikTok</span>
-            <span className="plat"><i className="pin" />Pin</span>
-            <span className="plat"><i className="fb" />Meta</span>
-            <span className="plat"><i className="em" />Mail</span>
-            <span className="plat"><i className="wa" />WA</span>
-          </div>
           <button
             type="button"
-            onClick={toggleTheme}
+            onClick={() => setPanelOpen((v) => !v)}
+            aria-expanded={panelOpen}
+            aria-label={panelOpen ? "Collapse top panel" : "Expand top panel"}
+            title={panelOpen ? "Collapse panel" : "Expand panel"}
             className="flex h-[34px] w-[34px] cursor-pointer items-center justify-center rounded-full border border-line bg-surface text-mut transition-transform hover:scale-105 hover:text-ink"
-            title="Toggle appearance"
-            aria-label="Toggle light or dark theme"
           >
-            {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+            {panelOpen ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
           </button>
-          <LogoutButton />
+          {panelOpen ? (
+            <>
+              <div className="seg" role="group" aria-label="Brand filter">
+                <button type="button" className={brand === "all" ? "on" : ""} onClick={() => setBrand("all")}>
+                  ALL
+                </button>
+                <button type="button" className={brand === "env" ? "on" : ""} onClick={() => setBrand("env")}>
+                  ENVOGUE
+                </button>
+                <button type="button" className={brand === "brand" ? "on" : ""} onClick={() => setBrand("brand")}>
+                  PERSONAL
+                </button>
+              </div>
+              <div className="flex flex-wrap items-center gap-[5px]" aria-hidden>
+                <span className="plat"><i className="ig" />IG</span>
+                <span className="plat"><i className="tk" />TikTok</span>
+                <span className="plat"><i className="pin" />Pin</span>
+                <span className="plat"><i className="fb" />Meta</span>
+                <span className="plat"><i className="em" />Mail</span>
+                <span className="plat"><i className="wa" />WA</span>
+              </div>
+              <button
+                type="button"
+                onClick={toggleTheme}
+                className="flex h-[34px] w-[34px] cursor-pointer items-center justify-center rounded-full border border-line bg-surface text-mut transition-transform hover:scale-105 hover:text-ink"
+                title="Toggle appearance"
+                aria-label="Toggle light or dark theme"
+              >
+                {theme === "dark" ? <Sun size={15} /> : <Moon size={15} />}
+              </button>
+              <LogoutButton />
+            </>
+          ) : null}
         </div>
       </header>
 
@@ -433,7 +448,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
       </div>
 
       <p className="mt-5 text-center text-[11px] text-dim">
-        Pilot build — AI copy via DeepSeek v4-flash · images via FLUX.1-dev / Gemini · email via Resend. Human-in-the-loop: AI drafts, a human approves, only then it posts.
+        Pilot build — AI copy via DeepSeek v4-flash · images via Gemini 2.5 Flash Image · email via Resend. Human-in-the-loop: AI drafts, a human approves, only then it posts.
       </p>
 
       {/* ── editor modal ── */}
