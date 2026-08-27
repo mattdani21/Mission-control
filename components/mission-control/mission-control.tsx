@@ -192,9 +192,13 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
 
   useEffect(() => {
     if (!slotMenuOpen) return;
+    // Listen on 'click', not 'mousedown': mousedown closes the menu and
+    // unmounts the item buttons BEFORE their click can fire — the classic
+    // 'toggle does nothing' bug. The menu + trigger stopPropagation on
+    // click, so only true outside clicks reach the document listener.
     const onDocClick = () => setSlotMenuOpen(false);
-    document.addEventListener("mousedown", onDocClick);
-    return () => document.removeEventListener("mousedown", onDocClick);
+    document.addEventListener("click", onDocClick);
+    return () => document.removeEventListener("click", onDocClick);
   }, [slotMenuOpen]);
 
   /* ── AI-adapt: real streaming call to POST /api/ai/draft ── */
