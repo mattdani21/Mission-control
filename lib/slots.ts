@@ -41,6 +41,10 @@ export interface SlotConfig {
   tagline: string;
   composerDefault: string;
   defaultPrompt: string;
+  /** Company Strat — goals for the company. Human view, editable; grounds AI agents. */
+  companyStrat: string;
+  /** Brand Strategy — researched strategy tied to company goals. Human view, editable; grounds AI agents. */
+  brandStrategy: string;
   timeContext: Record<TimeScale, string>;
   calHint: Record<TimeScale, string>;
   goals: Record<TimeScale, Goal[]>;
@@ -65,6 +69,10 @@ const ENVOGUE: SlotConfig = {
   composerDefault:
     "The corseted column is the matric look of 2026. Book before 30 September and alterations are on us. Sizes 34–42. First choice goes to the first to book.",
   defaultPrompt: GENERIC_PROMPT,
+  companyStrat:
+    "R100k gross revenue per peak season (dance countdown Q4). Zero cold ad spend — warm retargeting only. R25k budget cap per campaign. Founder approves all spend, outreach and publishing. Every campaign must build the case study that prices the next engagement.",
+  brandStrategy:
+    "Book Your Dance — first choice goes to the first to book. Audience: matric girls + moms (free distribution: school WhatsApp + TikTok). Format spine: 15s Try-On Tuesday reels (hanger → twirl → verdict). First action: R500 deposit via pre-filled WhatsApp, 30 Sep alterations deadline. Stars: 2 Hero Girls (real customers) amplified weekly. AI lookbooks sell the dream, UGC proves the truth — never mixed in one frame.",
   timeContext: {
     year: "Planning horizon · Sep 2026–Aug 2027 · Dance Countdown LIVE → Matric 2027 First Pick",
     quarter: "Q4 2026 · Sep–Nov · Dance Countdown — the live season",
@@ -262,6 +270,10 @@ const EMPIRE: SlotConfig = {
   composerDefault:
     "Portfolio headline: four ventures, one machine — cash, scorecard, and OpenClaw agents running while the founder sleeps.",
   defaultPrompt: GENERIC_PROMPT,
+  companyStrat:
+    "R4.8M/yr base case across 3 entities (Envogue + dress line + software); R400k/mo sustained run-rate. 6 scorecard metrics on target every month. Gross margin ≥35% — margin is the flywheel's fuel. Founder time saved is the core promise and is measured weekly. Kicker + equity triggers per the retained SOW.",
+  brandStrategy:
+    "The Empire Flywheel: one machine over the ventures — holdco entity structure, unified cash dashboard, OpenClaw agents (~14 automations, ~50 hrs/wk saved), NSETA learner grants, quarterly scorecard with comp triggers. Every venture reuses the seasonal catalyst playbook; the founder's personal brand carries ~30% of bookings.",
   timeContext: {
     year: "Planning horizon · 2027 · portfolio flywheel · 3 entities",
     quarter: "Q2 2027 · Apr–Jun · matric early-bird + Durban July",
@@ -459,6 +471,10 @@ const TESSERA: SlotConfig = {
   composerDefault:
     "Tessera: an AI employee that owns a bounded task end-to-end. One pilot, one month — if it doesn't earn its payroll, you cut it.",
   defaultPrompt: GENERIC_PROMPT,
+  companyStrat:
+    "Pilots → ARR: 12 pilots live this year, 80% renewal, R1.2M ARR. Shinji email-indexer proves the model at $24k pilot → $96k/yr. Model Gate (trust layer) + deepkimi (SLM) are the assets behind every agent. Founder gates every external commitment.",
+  brandStrategy:
+    "AI employees for bounded tasks: one bounded task, one month pilot; if it doesn't earn its payroll you cut it. Sell on trust — an agent that can't show its work shouldn't do the work (ledger + gates). B2B motion: demo → scoped SOW → build → renewal. Case studies are the sales engine ($24k → $96k/yr).",
   timeContext: {
     year: "Planning horizon · 2026–27 · pilots → ARR engine",
     quarter: "Q4 2026 · Sep–Nov · pilot push",

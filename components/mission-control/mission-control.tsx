@@ -18,6 +18,9 @@ import { createCampaign, scheduleSend, streamDraft, tomorrowNineSast } from "./a
 import { GenerateModal } from "./generate-modal";
 import { KpiGrid } from "./kpi-grid";
 import { CaptureCalendar, Gallery, Pipeline, TimeContext } from "./sections";
+import { StrategyGrounding } from "./strategy-grounding";
+
+type ActiveSlot = "all" | SlotId;
 
 interface MissionControlProps {
   userName: string | null;
@@ -41,32 +44,108 @@ function buildPipeline(
   };
 }
 
+function unionBy<T>(arrays: T[][], key: (t: T) => string): T[] {
+  const seen = new Set<string>();
+  const out: T[] = [];
+  for (const arr of arrays) {
+    for (const item of arr) {
+      const k = key(item);
+      if (!seen.has(k)) {
+        seen.add(k);
+        out.push(item);
+      }
+    }
+  }
+  return out;
+}
+
+/** ALL view: one headline KPI card per brand — honest portfolio, no invented sums. */
+function portfolioGoals(): Record<TimeScale, import("../../lib/mission-data").Goal[]> {
+  const cards = SLOT_IDS.map((sid) => {
+    const headline = SLOTS[sid].goals.year[0]!;
+    return { label: SLOTS[sid].label, value: headline.value, sub: headline.label, tone: headline.tone };
+  });
+  return { year: cards, quarter: cards, month: cards, week: cards, day: cards };
+}
+
+/** ALL view: merged capture calendar (dedup by label). */
+function portfolioWindows() {
+  return unionBy(SLOT_IDS.map((sid) => SLOTS[sid].windows), (w) => w.label);
+}
+
+function portfolioCamps() {
+  return unionBy(SLOT_IDS.map((sid) => SLOTS[sid].camps), (c) => c.label);
+}
+
+function portfolioPipe(): Record<string, PipeCard[]> {
+  const stages = ["Concept", "Draft", "Editor", "Approval", "Post ready"] as const;
+  const merged: Record<string, PipeCard[]> = {};
+  for (const stage of stages) {
+    merged[stage] = unionBy(
+      SLOT_IDS.map((sid) => SLOTS[sid].pipe[stage] ?? []),
+      (c) => `${c.title}::${c.brand}`,
+    );
+  }
+  return merged;
+}
+
+/** Resolve the active view: a brand's full platform, or the merged ALL view. */
+function makeView(pick: ActiveSlot): SlotConfig {
+  if (pick !== "all") return SLOTS[pick];
+  return {
+    ...SLOTS.envogue,
+    label: "ALL",
+    brandName: "All companies",
+    tagline: "Empyrean · full portfolio · every brand, same machine",
+    composerDefault: "Portfolio view — pick a brand to compose for that brand.",
+    timeContext: {
+      year: "All companies · 12-month horizon",
+      quarter: "Q4 · all brands",
+      month: "Sep · all brands",
+      week: "This week · all brands",
+      day: "Today · all brands",
+    },
+    calHint: { year: "All companies", quarter: "Q4", month: "Sep", week: "Wk 1", day: "today" },
+    goals: portfolioGoals(),
+    windows: portfolioWindows(),
+    camps: portfolioCamps(),
+    pipe: portfolioPipe(),
+    queue: unionBy(SLOT_IDS.map((sid) => SLOTS[sid].queue), (q) => `${q.tm}::${q.pt}::${q.tx}`),
+    captionBank: SLOTS.envogue.captionBank,
+    gallery: unionBy(SLOT_IDS.map((sid) => SLOTS[sid].gallery), (g) => g.key),
+  };
+}
+
 function nowTime(): string {
   return new Date().toTimeString().slice(0, 5);
 }
 
 export default function MissionControl({ userName, userEmail, initialCampaigns }: MissionControlProps) {
-  const [slotId, setSlotId] = useState<SlotId>(() => {
+  const [activeSlot, setActiveSlot] = useState<ActiveSlot>(() => {
     if (typeof window === "undefined") return "envogue";
     const saved = window.localStorage.getItem("mc-slot");
-    return saved && (SLOT_IDS as string[]).includes(saved) ? (saved as SlotId) : "envogue";
+    return saved && (["all", ...SLOT_IDS] as string[]).includes(saved) ? (saved as ActiveSlot) : "envogue";
   });
-  const slot = SLOTS[slotId];
+  const [slotMenuOpen, setSlotMenuOpen] = useState(false);
+  const isAll = activeSlot === "all";
+
+  const view: SlotConfig = useMemo(() => makeView(activeSlot), [activeSlot]);
+
   const [scale, setScale] = useState<TimeScale>("year");
   const [brand, setBrand] = useState<BrandFilter>("all");
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [panelOpen, setPanelOpen] = useState(true);
 
-  const [composer, setComposer] = useState(slot.composerDefault);
+  const [composer, setComposer] = useState(view.composerDefault);
   const [targets, setTargets] = useState<string[]>(["IG Feed", "Reels", "TikTok", "Pinterest"]);
   const [recipient, setRecipient] = useState("");
   const [postState, setPostState] = useState("");
   const [aiBusy, setAiBusy] = useState(false);
   const [schedBusy, setSchedBusy] = useState(false);
   const [generateOpen, setGenerateOpen] = useState(false);
-  const [queue, setQueue] = useState<QueueEntry[]>(slot.queue);
-  const [pipeline, setPipeline] = useState<Record<string, PipeCard[]>>(() => buildPipeline(slot, initialCampaigns));
-  const [gallery, setGallery] = useState<GalleryItem[]>(slot.gallery);
+  const [queue, setQueue] = useState<QueueEntry[]>(view.queue);
+  const [pipeline, setPipeline] = useState<Record<string, PipeCard[]>>(() => buildPipeline(view, initialCampaigns));
+  const [gallery, setGallery] = useState<GalleryItem[]>(view.gallery);
 
   // Editor modal state.
   const [modal, setModal] = useState<{ item: GalleryItem; caption: string; stage: string; approved: boolean; posted: boolean } | null>(null);
@@ -92,22 +171,31 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
     setTargets((prev) => (prev.includes(channel) ? prev.filter((c) => c !== channel) : [...prev, channel]));
   };
 
-  const goals = useMemo(() => slot.goals[scale], [slot, scale]);
+  const goals = useMemo(() => view.goals[scale], [view, scale]);
 
-  const switchSlot = (sid: SlotId) => {
-    if (sid === slotId) return;
-    window.localStorage.setItem("mc-slot", sid);
-    setSlotId(sid);
+  const switchSlot = (pick: ActiveSlot) => {
+    if (pick === activeSlot) return;
+    window.localStorage.setItem("mc-slot", pick);
+    setActiveSlot(pick);
+    setSlotMenuOpen(false);
     setScale("year");
     setBrand("all");
     setModal(null);
     setGenerateOpen(false);
-    setComposer(SLOTS[sid].composerDefault);
-    setQueue(SLOTS[sid].queue);
-    setGallery(SLOTS[sid].gallery);
-    setPipeline(buildPipeline(SLOTS[sid], initialCampaigns));
+    const next = makeView(pick);
+    setComposer(next.composerDefault);
+    setQueue(next.queue);
+    setGallery(next.gallery);
+    setPipeline(buildPipeline(next, initialCampaigns));
     setPostState("");
   };
+
+  useEffect(() => {
+    if (!slotMenuOpen) return;
+    const onDocClick = () => setSlotMenuOpen(false);
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, [slotMenuOpen]);
 
   /* ── AI-adapt: real streaming call to POST /api/ai/draft ── */
   const handleAiAdapt = useCallback(async () => {
@@ -255,7 +343,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
     });
   };
 
-  const captionBank = slot.captionBank;
+  const captionBank = view.captionBank;
 
   return (
     <main className="mx-auto w-full max-w-[1240px] px-4 pb-[max(5rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:px-7">
@@ -268,10 +356,10 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
           </div>
           <div className={panelOpen ? "min-w-0" : "hidden min-w-0"}>
             <h1 className="text-[16px] font-bold leading-tight tracking-[-0.02em] text-ink sm:text-[19px]">
-              {slot.brandName} — Marketing Mission Control
+              Marketing Mission Control
             </h1>
             <span className="mt-0.5 block truncate text-[11.5px] text-mut">
-              {slot.tagline} · {userName ? `${userName} · ` : ""}
+              {view.tagline} · {userName ? `${userName} · ` : ""}
               <span className="font-mono text-[11px] text-mut">{userEmail}</span>
             </span>
           </div>
@@ -289,17 +377,56 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
           </button>
           {panelOpen ? (
             <>
-              <div className="seg max-w-full overflow-x-auto" role="group" aria-label="Client slot">
-                {SLOT_IDS.map((sid) => (
-                  <button
-                    key={sid}
-                    type="button"
-                    className={`${slotId === sid ? "on" : ""} !px-3 !py-[7px] !text-[10.5px] !font-semibold`}
-                    onClick={() => switchSlot(sid)}
+              <div className="relative" role="group" aria-label="Company">
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSlotMenuOpen((v) => !v);
+                  }}
+                  aria-expanded={slotMenuOpen}
+                  aria-haspopup="menu"
+                  className="flex h-[34px] cursor-pointer items-center gap-2 rounded-full border border-line bg-surface px-3.5 text-[11px] font-semibold text-mut transition-colors hover:text-ink"
+                  title="Toggle companies"
+                >
+                  <span className="text-accent-ink">{isAll ? "All companies" : `Full platform as ${view.brandName}`}</span>
+                  <ChevronDown size={13} className={`transition-transform ${slotMenuOpen ? "rotate-180" : ""}`} aria-hidden />
+                </button>
+                {slotMenuOpen ? (
+                  <div
+                    role="menu"
+                    className="absolute right-0 top-full z-40 mt-2 w-64 rounded-xl border border-line bg-surface-solid p-1.5 shadow-[var(--shadow-hover)]"
+                    onClick={(e) => e.stopPropagation()}
                   >
-                    {SLOTS[sid].label}
-                  </button>
-                ))}
+                    <button
+                      type="button"
+                      role="menuitem"
+                      className={`block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-[12px] font-medium transition-colors hover:bg-surface-2 ${
+                        isAll ? "bg-surface-2 text-ink" : "text-mut"
+                      }`}
+                      onClick={() => switchSlot("all")}
+                    >
+                      All companies
+                      <span className="block text-[10px] font-normal text-dim">full portfolio view</span>
+                    </button>
+                    {SLOT_IDS.map((sid) => (
+                      <button
+                        key={sid}
+                        type="button"
+                        role="menuitem"
+                        className={`block w-full cursor-pointer rounded-lg px-3 py-2 text-left text-[12px] font-medium transition-colors hover:bg-surface-2 ${
+                          activeSlot === sid ? "bg-surface-2 text-ink" : "text-mut"
+                        }`}
+                        onClick={() => switchSlot(sid)}
+                      >
+                        {SLOTS[sid].label}
+                        <span className="block text-[10px] font-normal text-dim">
+                          full platform as {SLOTS[sid].brandName}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
               </div>
               <div className="seg" role="group" aria-label="Brand filter">
                 <button type="button" className={brand === "all" ? "on" : ""} onClick={() => setBrand("all")}>
@@ -349,7 +476,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
             </button>
           ))}
         </div>
-        <TimeContext context={slot.timeContext[scale]} />
+        <TimeContext context={view.timeContext[scale]} />
       </div>
 
       {/* ── KPI cards ── */}
@@ -357,13 +484,18 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
         <KpiGrid goals={goals} />
       </div>
 
+      {/* ── strategy & grounding (human view — grounds AI agents) ── */}
+      {isAll
+        ? SLOT_IDS.map((sid) => <StrategyGrounding key={sid} slotId={sid} slot={SLOTS[sid]} />)
+        : <StrategyGrounding slotId={activeSlot} slot={SLOTS[activeSlot]} />}
+
       {/* ── capture calendar ── */}
       <CaptureCalendar
         scale={scale}
         brand={brand}
-        windows={slot.windows}
-        camps={slot.camps}
-        calHint={slot.calHint[scale]}
+        windows={view.windows}
+        camps={view.camps}
+        calHint={view.calHint[scale]}
       />
 
       {/* ── gallery ── */}
@@ -471,7 +603,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
       {/* ── Gemini generate pop-out ── */}
       <GenerateModal
         open={generateOpen}
-        initialPrompt={slot.defaultPrompt}
+        initialPrompt={view.defaultPrompt}
         onClose={() => setGenerateOpen(false)}
         onAdd={(item) => {
           setGenerateOpen(false);

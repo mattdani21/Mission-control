@@ -14,6 +14,9 @@ describe("slot templates", () => {
       expect(slot.brandName.length).toBeGreaterThan(0);
       expect(slot.composerDefault.length).toBeGreaterThan(10);
       expect(slot.defaultPrompt.length).toBeGreaterThan(20);
+      // Strategy grounding — human view, must be seeded for every brand.
+      expect(slot.companyStrat.length).toBeGreaterThan(20);
+      expect(slot.brandStrategy.length).toBeGreaterThan(20);
       // All five time scales populated for goals, timeContext and calHint.
       for (const scale of ["year", "quarter", "month", "week", "day"] as const) {
         expect(slot.goals[scale].length).toBeGreaterThanOrEqual(4);
