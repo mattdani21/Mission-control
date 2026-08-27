@@ -58,7 +58,7 @@ describe("slot templates", () => {
 
   it("tessera slot carries the AI-employee pilot economics", () => {
     expect(SLOTS.tessera.brandName).toBe("Tessera");
-    expect(SLOTS.tessera.goals.year[0]?.value).toBe("R1.2M");
+    expect(SLOTS.tessera.goals.year[0]?.value).toBe("R1B");
     expect(SLOTS.tessera.pipe.Winner?.some((c) => c.title.includes("Shinji case study"))).toBe(true);
   });
 
