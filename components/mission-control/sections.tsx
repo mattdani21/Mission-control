@@ -2,18 +2,15 @@ import {
   axisLabels,
   brandLabel,
   brandMatch,
-  CAL_HINT,
-  CAMPS,
   scaleWidth,
   STAGES,
   tagLabel,
-  TIME_CONTEXT,
-  WINDOWS,
   type BrandFilter,
   type CampRow,
   type GalleryItem,
   type PipeCard,
   type TimeScale,
+  type WindowRow,
 } from "../../lib/mission-data";
 
 /* ─── Market Capture Calendar ─── */
@@ -39,12 +36,24 @@ function CampBar({ row, width }: { row: CampRow; width: number }) {
   );
 }
 
-export function CaptureCalendar({ scale, brand }: { scale: TimeScale; brand: BrandFilter }) {
+export function CaptureCalendar({
+  scale,
+  brand,
+  windows,
+  camps,
+  calHint,
+}: {
+  scale: TimeScale;
+  brand: BrandFilter;
+  windows: WindowRow[];
+  camps: CampRow[];
+  calHint: string;
+}) {
   const width = scaleWidth(scale);
   const axes = axisLabels(scale);
 
-  const windows = WINDOWS.filter((w) => brandMatch(w.brand, brand));
-  const camps = CAMPS.filter((c) => brandMatch(c.brand, brand));
+  const visibleWindows = windows.filter((w) => brandMatch(w.brand, brand));
+  const visibleCamps = camps.filter((c) => brandMatch(c.brand, brand));
 
   return (
     <section className="mc-card mb-[18px] p-6" aria-labelledby="cal-title">
@@ -53,10 +62,10 @@ export function CaptureCalendar({ scale, brand }: { scale: TimeScale; brand: Bra
         className="mb-4 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[13px] font-semibold text-ink"
       >
         Market capture calendar
-        <span className="whitespace-nowrap text-[11px] font-medium normal-case text-dim">{CAL_HINT[scale]}</span>
+        <span className="whitespace-nowrap text-[11px] font-medium normal-case text-dim">{calHint}</span>
       </h2>
       <div>
-        {windows.map((w) => (
+        {visibleWindows.map((w) => (
           <div key={w.label} className="mb-[7px] flex flex-col gap-1 sm:flex-row sm:items-center sm:gap-3">
             <div className="w-full text-left text-[11.5px] font-medium leading-tight text-mut sm:w-[168px] sm:flex-shrink-0 sm:text-right">
               {w.label}
@@ -68,7 +77,7 @@ export function CaptureCalendar({ scale, brand }: { scale: TimeScale; brand: Bra
             </div>
           </div>
         ))}
-        {camps.map((c) => (
+        {visibleCamps.map((c) => (
           <CampBar key={c.label} row={c} width={width} />
         ))}
         <div className="mt-2.5 flex border-t border-line pt-2">
@@ -211,6 +220,6 @@ export function Gallery({
 
 /* ─── Time context line ─── */
 
-export function TimeContext({ scale }: { scale: TimeScale }) {
-  return <span className="text-[12.5px] font-normal text-mut">{TIME_CONTEXT[scale]}</span>;
+export function TimeContext({ context }: { context: string }) {
+  return <span className="text-[12.5px] font-normal text-mut">{context}</span>;
 }

@@ -4,12 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronDown, ChevronUp, Moon, Sun } from "lucide-react";
 
 import {
-  CAPTION_BANK,
   CHANNELS,
-  GALLERY,
-  GOALS,
-  INITIAL_QUEUE,
-  PIPE,
   STAGES,
   type BrandFilter,
   type GalleryItem,
@@ -17,6 +12,7 @@ import {
   type QueueEntry,
   type TimeScale,
 } from "../../lib/mission-data";
+import { SLOTS, SLOT_IDS, type SlotConfig, type SlotId } from "../../lib/slots";
 import { LogoutButton } from "../logout-button";
 import { createCampaign, scheduleSend, streamDraft, tomorrowNineSast } from "./api";
 import { GenerateModal } from "./generate-modal";
@@ -29,42 +25,48 @@ interface MissionControlProps {
   initialCampaigns: Array<{ id: string; title: string; brief: string; channel: string; status: string }>;
 }
 
-const DEFAULT_IMAGE_PROMPT =
-  "Editorial fashion photograph, elegant evening gown, South African model, golden hour on Camps Bay beach, Vogue editorial style, full body, natural relaxed hands with five visible fingers";
+function buildPipeline(
+  cfg: SlotConfig,
+  initialCampaigns: MissionControlProps["initialCampaigns"],
+): Record<string, PipeCard[]> {
+  const draftCards: PipeCard[] = initialCampaigns.map((c) => ({
+    title: c.title,
+    sub: c.status === "draft" ? "draft · awaiting human editor" : c.status,
+    tag: "ai",
+    brand: "env",
+  }));
+  return {
+    ...cfg.pipe,
+    Draft: [...draftCards, ...(cfg.pipe.Draft ?? [])],
+  };
+}
 
 function nowTime(): string {
   return new Date().toTimeString().slice(0, 5);
 }
 
 export default function MissionControl({ userName, userEmail, initialCampaigns }: MissionControlProps) {
+  const [slotId, setSlotId] = useState<SlotId>(() => {
+    if (typeof window === "undefined") return "median";
+    const saved = window.localStorage.getItem("mc-slot");
+    return saved && (SLOT_IDS as string[]).includes(saved) ? (saved as SlotId) : "median";
+  });
+  const slot = SLOTS[slotId];
   const [scale, setScale] = useState<TimeScale>("year");
   const [brand, setBrand] = useState<BrandFilter>("all");
   const [theme, setTheme] = useState<"dark" | "light">("dark");
   const [panelOpen, setPanelOpen] = useState(true);
 
-  const [composer, setComposer] = useState(
-    "The corseted column is the matric look of 2026. Book before 30 September and alterations are on us. Sizes 34–42. First choice goes to the first to book.",
-  );
+  const [composer, setComposer] = useState(slot.composerDefault);
   const [targets, setTargets] = useState<string[]>(["IG Feed", "Reels", "TikTok", "Pinterest"]);
   const [recipient, setRecipient] = useState("");
   const [postState, setPostState] = useState("");
   const [aiBusy, setAiBusy] = useState(false);
   const [schedBusy, setSchedBusy] = useState(false);
   const [generateOpen, setGenerateOpen] = useState(false);
-  const [queue, setQueue] = useState<QueueEntry[]>(INITIAL_QUEUE);
-  const [pipeline, setPipeline] = useState<Record<string, PipeCard[]>>(() => {
-    const draftCards: PipeCard[] = initialCampaigns.map((c) => ({
-      title: c.title,
-      sub: c.status === "draft" ? "draft · awaiting human editor" : c.status,
-      tag: "ai",
-      brand: "env",
-    }));
-    return {
-      ...PIPE,
-      Draft: [...draftCards, ...(PIPE.Draft ?? [])],
-    };
-  });
-  const [gallery, setGallery] = useState<GalleryItem[]>(GALLERY);
+  const [queue, setQueue] = useState<QueueEntry[]>(slot.queue);
+  const [pipeline, setPipeline] = useState<Record<string, PipeCard[]>>(() => buildPipeline(slot, initialCampaigns));
+  const [gallery, setGallery] = useState<GalleryItem[]>(slot.gallery);
 
   // Editor modal state.
   const [modal, setModal] = useState<{ item: GalleryItem; caption: string; stage: string; approved: boolean; posted: boolean } | null>(null);
@@ -90,7 +92,22 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
     setTargets((prev) => (prev.includes(channel) ? prev.filter((c) => c !== channel) : [...prev, channel]));
   };
 
-  const goals = useMemo(() => GOALS[scale], [scale]);
+  const goals = useMemo(() => slot.goals[scale], [slot, scale]);
+
+  const switchSlot = (sid: SlotId) => {
+    if (sid === slotId) return;
+    window.localStorage.setItem("mc-slot", sid);
+    setSlotId(sid);
+    setScale("year");
+    setBrand("all");
+    setModal(null);
+    setGenerateOpen(false);
+    setComposer(SLOTS[sid].composerDefault);
+    setQueue(SLOTS[sid].queue);
+    setGallery(SLOTS[sid].gallery);
+    setPipeline(buildPipeline(SLOTS[sid], initialCampaigns));
+    setPostState("");
+  };
 
   /* ── AI-adapt: real streaming call to POST /api/ai/draft ── */
   const handleAiAdapt = useCallback(async () => {
@@ -238,7 +255,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
     });
   };
 
-  const captionBank = CAPTION_BANK;
+  const captionBank = slot.captionBank;
 
   return (
     <main className="mx-auto w-full max-w-[1240px] px-4 pb-[max(5rem,env(safe-area-inset-bottom))] pt-[max(1rem,env(safe-area-inset-top))] sm:px-7">
@@ -250,9 +267,11 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
             <img src="/assets/envogue-logo.jpg" alt="Envogue" className="h-full w-full object-contain" />
           </div>
           <div className={panelOpen ? "min-w-0" : "hidden min-w-0"}>
-            <h1 className="text-[16px] font-bold leading-tight tracking-[-0.02em] text-ink sm:text-[19px]">Envogue — Marketing Mission Control</h1>
+            <h1 className="text-[16px] font-bold leading-tight tracking-[-0.02em] text-ink sm:text-[19px]">
+              {slot.brandName} — Marketing Mission Control
+            </h1>
             <span className="mt-0.5 block truncate text-[11.5px] text-mut">
-              {userName ? `${userName} · ` : ""}
+              {slot.tagline} · {userName ? `${userName} · ` : ""}
               <span className="font-mono text-[11px] text-mut">{userEmail}</span>
             </span>
           </div>
@@ -270,12 +289,24 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
           </button>
           {panelOpen ? (
             <>
+              <div className="seg max-w-full overflow-x-auto" role="group" aria-label="Client slot">
+                {SLOT_IDS.map((sid) => (
+                  <button
+                    key={sid}
+                    type="button"
+                    className={`${slotId === sid ? "on" : ""} !px-3 !py-[7px] !text-[10.5px] !font-semibold`}
+                    onClick={() => switchSlot(sid)}
+                  >
+                    {SLOTS[sid].label}
+                  </button>
+                ))}
+              </div>
               <div className="seg" role="group" aria-label="Brand filter">
                 <button type="button" className={brand === "all" ? "on" : ""} onClick={() => setBrand("all")}>
                   ALL
                 </button>
                 <button type="button" className={brand === "env" ? "on" : ""} onClick={() => setBrand("env")}>
-                  ENVOGUE
+                  CLIENT
                 </button>
                 <button type="button" className={brand === "brand" ? "on" : ""} onClick={() => setBrand("brand")}>
                   PERSONAL
@@ -318,7 +349,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
             </button>
           ))}
         </div>
-        <TimeContext scale={scale} />
+        <TimeContext context={slot.timeContext[scale]} />
       </div>
 
       {/* ── KPI cards ── */}
@@ -327,7 +358,13 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
       </div>
 
       {/* ── capture calendar ── */}
-      <CaptureCalendar scale={scale} brand={brand} />
+      <CaptureCalendar
+        scale={scale}
+        brand={brand}
+        windows={slot.windows}
+        camps={slot.camps}
+        calHint={slot.calHint[scale]}
+      />
 
       {/* ── gallery ── */}
       <Gallery
@@ -434,7 +471,7 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
       {/* ── Gemini generate pop-out ── */}
       <GenerateModal
         open={generateOpen}
-        initialPrompt={DEFAULT_IMAGE_PROMPT}
+        initialPrompt={slot.defaultPrompt}
         onClose={() => setGenerateOpen(false)}
         onAdd={(item) => {
           setGenerateOpen(false);
