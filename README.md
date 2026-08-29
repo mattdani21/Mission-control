@@ -36,9 +36,12 @@ A web app where a marketer can:
   converted to the same Anthropic-shaped SSE the client always consumed).
   Every request records one `ai_usage` row, attributed to the caller's
   workspace. `LLM_DEV_MODE=1` serves a canned stream when no key is set.
-- Image generation — `POST /api/ai/image`: FLUX.1-dev via DeepInfra
-  (`DEEPINFRA_API_KEY`, ~$0.025–0.05/image) with Gemini 2.5 Flash Image
-  (`GOOGLE_API_KEY`) as fallback; returns a data URL to the browser.
+- Image generation — `POST /api/ai/image`: Gemini only (DeepInfra FLUX was
+  removed per owner direction). Default/draft tier uses Gemini 2.5 Flash Image
+  (`GOOGLE_API_KEY`); `hero: true` routes to gemini-3-pro-image with a
+  hand-safe prompt suffix and an automatic vision-QA gate (PASS/FAIL on
+  deformed hands/artifacts, up to 3 regeneration attempts) — only QA-passed
+  images are returned. Returns a data URL to the browser.
 - Resend for transactional + marketing email
 - Scheduled sends — a Postgres-backed queue (`send_schedules`) with a cron+queue
   runner: `npm run worker` (long-running poller) or `GET /api/cron/send`
@@ -53,8 +56,9 @@ A web app where a marketer can:
 ```bash
 cp .env.example .env
 # fill in DATABASE_URL, AUTH_SECRET, GAPOS_LLM_API_KEY, RESEND_API_KEY
-# (GAPOS_LLM_API_KEY is the shared DeepSeek key; DEEPINFRA_API_KEY /
-#  GOOGLE_API_KEY enable image generation; LLM_DEV_MODE=1 + RESEND_DEV_MODE=1
+# (GAPOS_LLM_API_KEY is the shared DeepSeek key; GOOGLE_API_KEY enables image
+#  generation — Gemini 2.5 Flash Image for drafts, gemini-3-pro-image for
+#  hero shots; LLM_DEV_MODE=1 + RESEND_DEV_MODE=1
 #  run the whole AI/send flow offline without keys)
 # generate a real AUTH_SECRET: openssl rand -base64 32
 

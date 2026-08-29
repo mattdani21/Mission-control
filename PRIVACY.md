@@ -12,8 +12,9 @@ pilot.
   sends and their delivery status, and AI usage records (provider, model,
   token counts) attributed to your workspace.
 - **AI prompts** — text you send to the AI assistant is forwarded to the AI
-  provider (DeepSeek) to generate drafts; generated images use DeepInfra /
-  Google Gemini. Prompts are processed by those providers under their own
+  provider (DeepSeek) to generate drafts; generated images use Google Gemini
+  (GOOGLE_API_KEY — Gemini 2.5 Flash Image for drafts, gemini-3-pro-image for
+  hero shots). Prompts are processed by those providers under their own
   policies.
 
 ## What we do not do
