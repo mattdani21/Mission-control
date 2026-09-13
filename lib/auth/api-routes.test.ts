@@ -45,6 +45,7 @@ beforeAll(async () => {
   // getPool() refuses to build a pool without DATABASE_URL; pg-mem's Pool
   // ignores the connection string, so a placeholder satisfies the guard.
   process.env.DATABASE_URL = "postgresql://mem:mem@localhost/mission_control";
+  process.env.RESEND_DEV_MODE = "1";
   const { Pool } = memDb().adapters.createPg();
   pool = new Pool();
 });

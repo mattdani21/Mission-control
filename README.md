@@ -6,8 +6,9 @@ channel integrations.
 
 ## Status
 
-Pre-launch. Target launch: this week. See
-[`LAUNCH_CHECKLIST.md`](./LAUNCH_CHECKLIST.md) for the runbook and
+Pre-launch. Product code for M1–M6 is in-repo; owner go-live is
+[`GO_LIVE.md`](./GO_LIVE.md). See [`LAUNCH_CHECKLIST.md`](./LAUNCH_CHECKLIST.md)
+for the human checklist, [`RUNBOOK.md`](./RUNBOOK.md) for incidents, and
 [`.github/workflows/launch-readiness.yml`](./.github/workflows/launch-readiness.yml)
 for the automated audit → harden → package pipeline.
 
@@ -48,7 +49,7 @@ A web app where a marketer can:
   (cron-triggered tick). No external queue service needed; see "Scheduled sends".
 - Campaigns — `campaigns` table + `POST/GET /api/campaigns`; the pilot UI's
   "Send to Draft" persists a real campaign row.
-- Sentry + pino for observability
+- Sentry (`@sentry/nextjs`, source maps when `SENTRY_AUTH_TOKEN` is set) + pino JSON on stdout
 - Railway for hosting (Dockerfile standalone build + `railway.json`)
 
 ## Local development
@@ -91,11 +92,14 @@ job service:
    Any scheduler drives ticks:
    - locally / on a VM: `npm run worker` polls the queue (docker-compose runs
      a `worker` service for you),
-   - serverless: point a cron (Vercel Cron, cron-job.org, …) at
-     `GET /api/cron/send` with the `x-cron-secret` header set to `CRON_SECRET`
-     (the endpoint is otherwise 401; it returns per-tick send counts).
-3. **Watch** — delivery/bounce events will arrive via the webhook handler and
-   update `delivery_status` (M3 roadmap).
+   - **production (Railway):** the standalone Docker image cannot run
+     `npm run worker`. Point a cron (Railway Cron, cron-job.org, …) at
+     `GET /api/cron/send` every 1–5 minutes with the `x-cron-secret` header
+     set to `CRON_SECRET` (the endpoint is otherwise 401; it returns
+     per-tick send counts).
+3. **Watch** — Resend delivery / bounce / complaint / delayed events POST to
+   `/api/webhooks/resend` (Svix-signed with `RESEND_WEBHOOK_SECRET`) and
+   update `send_schedules.delivery_status`.
 
 For local development without a Resend account, set `RESEND_DEV_MODE=1`: with
 no `RESEND_API_KEY` the runner returns synthetic message ids and the full
@@ -139,9 +143,16 @@ ghcr.io/mattdani21/mission-control:<version>
 
 Release bundles are attached to the workflow run as artifacts.
 
+## Logs
+
+pino writes JSON to stdout. Railway captures it. Attach a log drain (Axiom /
+Better Stack / Logtail) on the service — do not add a second logging SDK.
+See [`RUNBOOK.md`](./RUNBOOK.md).
+
 ## Security
 
-See [`SECURITY.md`](./SECURITY.md).
+See [`SECURITY.md`](./SECURITY.md). Vulnerability reports:
+[team@empyrean.co.za](mailto:team@empyrean.co.za).
 
 ## License
 

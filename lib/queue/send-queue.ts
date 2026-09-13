@@ -105,6 +105,7 @@ export interface SendQueueRepository {
   claimDue(limit: number, now?: Date): Promise<ClaimedSend[]>;
   markSent(id: string, resendMessageId: string): Promise<SendSchedule>;
   markFailed(id: string, error: string, settle?: SettleInput): Promise<SendSchedule>;
+  updateDeliveryStatus(resendMessageId: string, deliveryStatus: string): Promise<SendSchedule | null>;
   get(id: string): Promise<SendSchedule | null>;
   listForWorkspace(workspaceId: string, limit?: number): Promise<SendSchedule[]>;
 }
@@ -225,6 +226,17 @@ export class PgSendQueueRepository implements SendQueueRepository {
       [id, canRetry ? "pending" : "failed", error, nextAttemptAt],
     );
     return updated[0];
+  }
+
+  async updateDeliveryStatus(resendMessageId: string, deliveryStatus: string): Promise<SendSchedule | null> {
+    const { rows } = await getPool().query<ScheduleRow>(
+      `UPDATE send_schedules
+       SET delivery_status = $2, updated_at = now()
+       WHERE resend_message_id = $1
+       RETURNING ${SCHEDULE_COLUMNS}`,
+      [resendMessageId, deliveryStatus],
+    );
+    return rows[0] ?? null;
   }
 
   async get(id: string): Promise<SendSchedule | null> {

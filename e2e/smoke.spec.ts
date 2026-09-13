@@ -63,6 +63,26 @@ test("signup → campaign → AI draft → scheduled send", async ({ page }) => 
   expect(result.sent).toBe(1);
 });
 
+test("delete account removes the user and returns home", async ({ page }) => {
+  const email = `delete-${Date.now()}@empyrean.test`;
+  await page.goto("/signup");
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill("DeletePass123!");
+  await page.getByRole("button", { name: "Create account" }).click();
+  await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
+
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "Delete account" }).click();
+  await expect(page.getByRole("heading", { name: "Mission Control" })).toBeVisible({ timeout: 20_000 });
+  await expect(page).not.toHaveURL(/\/dashboard/);
+
+  await page.goto("/login");
+  await page.getByLabel("Email").fill(email);
+  await page.getByLabel("Password").fill("DeletePass123!");
+  await page.getByRole("button", { name: "Sign in" }).click();
+  await expect(page.getByText(/Invalid email or password/)).toBeVisible();
+});
+
 test("theme toggle persists across reloads", async ({ page }) => {
   const email = `theme-${Date.now()}@empyrean.test`;
   await page.goto("/signup");

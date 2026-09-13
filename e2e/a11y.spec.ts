@@ -7,6 +7,17 @@ import { expect, test } from "@playwright/test";
  * this is the machine-checkable proxy for the Lighthouse ≥ 90 target.
  */
 
+test("privacy and terms pages have no serious or critical accessibility violations", async ({ page }) => {
+  for (const path of ["/privacy", "/terms"]) {
+    await page.goto(path);
+    const results = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+      .analyze();
+    const serious = results.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
+    expect(serious, path).toEqual([]);
+  }
+});
+
 test("landing page has no serious or critical accessibility violations", async ({ page }) => {
   await page.goto("/");
   const results = await new AxeBuilder({ page })

@@ -1,5 +1,7 @@
 import { CalendarRange, Github, Layers, Send, Sparkles } from "lucide-react";
 
+import { SiteFooter } from "../components/site-footer";
+
 export default function Home() {
   return (
     <main className="relative flex min-h-screen flex-col items-center justify-center gap-9 overflow-hidden px-6 py-20 sm:gap-10 sm:py-24">
@@ -35,7 +37,7 @@ export default function Home() {
           { icon: CalendarRange, title: "Capture calendar", sub: "Matric 2026 · July · Met" },
           { icon: Layers, title: "Pipeline", sub: "Winner → Test map → Post ready" },
           { icon: Sparkles, title: "AI copy + images", sub: "DeepSeek · Gemini" },
-          { icon: Send, title: "Scheduled sends", sub: "Email queue with webhook events" },
+          { icon: Send, title: "Scheduled sends", sub: "Email queue + delivery webhooks" },
         ].map((f) => (
           <div
             key={f.title}
@@ -76,6 +78,7 @@ export default function Home() {
         Pilot build for the Envogue owner — Dance Countdown 2026. Human-in-the-loop: AI drafts, a human approves, only
         then it posts.
       </p>
+      <SiteFooter />
     </main>
   );
 }

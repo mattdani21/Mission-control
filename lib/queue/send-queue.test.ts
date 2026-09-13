@@ -233,6 +233,26 @@ describe("PgSendQueueRepository", () => {
     expect(settled.lastError).toBe("invalid recipient");
   });
 
+  it("updates delivery_status by Resend message id", async () => {
+    const repo = new PgSendQueueRepository();
+    const schedule = await repo.createSchedule({
+      workspaceId: null,
+      recipientEmail: "hook@example.com",
+      subject: "Hook",
+      bodyHtml: "<p>h</p>",
+      scheduledFor: new Date("2026-08-07T10:00:00Z"),
+    });
+    await repo.claimDue(10, NOW);
+    await repo.markSent(schedule.id, "resend_hook_1");
+
+    const updated = await repo.updateDeliveryStatus("resend_hook_1", "delivered");
+    expect(updated?.id).toBe(schedule.id);
+    expect(updated?.deliveryStatus).toBe("delivered");
+
+    const missing = await repo.updateDeliveryStatus("resend_unknown", "bounced");
+    expect(missing).toBeNull();
+  });
+
   it("lists schedules for a workspace, newest first", async () => {
     const repo = new PgSendQueueRepository();
     const wsId = "ws-1";

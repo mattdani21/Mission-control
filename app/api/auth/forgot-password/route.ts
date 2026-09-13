@@ -29,7 +29,7 @@ export async function POST(request: Request) {
   });
 
   if (result) {
-    deliverPasswordResetEmail({ to: result.user.email, resetUrl: result.resetUrl });
+    await deliverPasswordResetEmail({ to: result.user.email, resetUrl: result.resetUrl });
   }
 
   return NextResponse.json(
