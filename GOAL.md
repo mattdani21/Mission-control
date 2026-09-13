@@ -33,15 +33,15 @@ Launch Mission Control as the live marketing-operations hub for Empyrean (target
 *Definition of done:* LAUNCH_CHECKLIST.md §5 (Quality) fully checked.
 
 ### M5 — Security, hardening and observability
-- [ ] `scripts/launch/harden.sh` green: secrets in env only, security headers, rate limiting, CSRF, Zod validation, CORS
-- [ ] Sentry (frontend + backend) with source maps; structured pino logs shipping to a viewer
-- [ ] Uptime monitor on /healthz, status page, on-call contact
-- [ ] DB backups: Neon point-in-time enabled and one verified restore
+- [x] `scripts/launch/harden.sh` green: secrets in env only, security headers, rate limiting, CSRF, Zod validation, CORS
+- [x] Sentry (frontend + backend) with source maps; structured pino logs on stdout (Railway + optional log drain — see RUNBOOK.md)
+- [ ] Uptime monitor on /healthz, status page, on-call contact — owner (GO_LIVE.md)
+- [ ] DB backups: Neon point-in-time enabled and one verified restore — owner (GO_LIVE.md)
 *Definition of done:* LAUNCH_CHECKLIST.md §6–§7 fully checked; hardening report has no failures.
 
 ### M6 — Compliance and launch
-- [ ] Publish /privacy and /terms; data deletion path
-- [ ] Domain + SSL, www→apex redirect, NODE_ENV=production
-- [ ] Tag v1.0.0 and let the package stage publish the GHCR image + release bundle
-- [ ] Smoke-test prod with a real signup + real send, then open the doors
+- [x] Publish /privacy and /terms; data deletion path (`DELETE /api/account`)
+- [ ] Domain + SSL, www→apex redirect, NODE_ENV=production — owner (GO_LIVE.md)
+- [ ] Tag v1.0.0 and let the package stage publish the GHCR image + release bundle — after prod smoke
+- [ ] Smoke-test prod with a real signup + real send, then open the doors — owner (GO_LIVE.md)
 *Definition of done:* launch-readiness workflow green on main, v1.0.0 tagged, real signup + send verified in prod (LAUNCH_CHECKLIST.md §9).

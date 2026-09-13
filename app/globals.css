@@ -648,6 +648,25 @@ button {
   background: transparent;
 }
 
+.legal-prose h1 {
+  @apply mb-4 text-3xl font-bold tracking-tight text-ink;
+}
+.legal-prose h2 {
+  @apply mb-2 mt-8 text-lg font-semibold text-ink;
+}
+.legal-prose p {
+  @apply mb-3;
+}
+.legal-prose ul {
+  @apply mb-3 list-disc space-y-1 pl-5;
+}
+.legal-prose code {
+  @apply rounded bg-surface-2 px-1 py-0.5 font-mono text-[12px] text-ink;
+}
+.legal-prose strong {
+  @apply font-semibold text-ink;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

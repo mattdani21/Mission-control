@@ -52,6 +52,7 @@ function fakeQueue(
     claimDue: vi.fn().mockResolvedValue(claims),
     markSent: vi.fn().mockResolvedValue(settled("sent")),
     markFailed: vi.fn().mockResolvedValue(settled("failed")),
+    updateDeliveryStatus: vi.fn(),
     get: vi.fn(),
     listForWorkspace: vi.fn(),
   };

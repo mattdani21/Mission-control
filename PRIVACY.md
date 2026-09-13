@@ -26,8 +26,10 @@ pilot.
 
 ## Data deletion
 
-Email the owner (team@empyrean.co.za) to request account and workspace
-deletion. We delete the account, workspaces, campaigns and usage rows.
+Signed-in users can delete their account from the dashboard (**Delete
+account**). That permanently removes the account, its workspace, campaigns,
+scheduled sends and AI usage rows. You can also email the owner
+(team@empyrean.co.za) and we will do the same.
 
 ## Contact
 

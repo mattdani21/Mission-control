@@ -15,4 +15,10 @@ describe("Home page", () => {
     expect(html).toContain('href="https://github.com/mattdani21/Mission-control"');
     expect(html).toContain("View the runbook");
   });
+
+  it("publishes privacy and terms", () => {
+    const html = renderToStaticMarkup(<Home />);
+    expect(html).toContain('href="/privacy"');
+    expect(html).toContain('href="/terms"');
+  });
 });

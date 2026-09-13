@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 
+import { SiteFooter } from "./site-footer";
+
 // Shared visual primitives for the auth pages — matches the landing page's
 // dark zinc aesthetic. Pure presentational; safe to import from client pages.
 
@@ -26,6 +28,7 @@ export function AuthCard({
         <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
         {subtitle ? <p className="mt-2 text-sm text-zinc-400">{subtitle}</p> : null}
         <div className="mt-6 rounded-lg border border-zinc-800 bg-zinc-900 p-6">{children}</div>
+        <SiteFooter className="mt-8" />
       </div>
     </main>
   );

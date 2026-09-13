@@ -13,7 +13,7 @@ The currently released version of Mission Control receives security updates.
 
 Please report vulnerabilities privately. Do **not** open a public issue.
 
-- Email: security@mission-control.example (replace before launch)
+- Email: team@empyrean.co.za
 - Or open a private security advisory:
   https://github.com/mattdani21/mission-control/security/advisories/new
 
