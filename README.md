@@ -91,11 +91,14 @@ job service:
    Any scheduler drives ticks:
    - locally / on a VM: `npm run worker` polls the queue (docker-compose runs
      a `worker` service for you),
-   - serverless: point a cron (Vercel Cron, cron-job.org, …) at
-     `GET /api/cron/send` with the `x-cron-secret` header set to `CRON_SECRET`
-     (the endpoint is otherwise 401; it returns per-tick send counts).
-3. **Watch** — delivery/bounce events will arrive via the webhook handler and
-   update `delivery_status` (M3 roadmap).
+   - **production (Railway):** the standalone Docker image cannot run
+     `npm run worker`. Point a cron (Railway Cron, cron-job.org, …) at
+     `GET /api/cron/send` every 1–5 minutes with the `x-cron-secret` header
+     set to `CRON_SECRET` (the endpoint is otherwise 401; it returns
+     per-tick send counts).
+3. **Watch** — Resend delivery / bounce / complaint / delayed events POST to
+   `/api/webhooks/resend` (Svix-signed with `RESEND_WEBHOOK_SECRET`) and
+   update `send_schedules.delivery_status`.
 
 For local development without a Resend account, set `RESEND_DEV_MODE=1`: with
 no `RESEND_API_KEY` the runner returns synthetic message ids and the full

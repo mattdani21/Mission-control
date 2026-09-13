@@ -35,7 +35,7 @@ export default function Home() {
           { icon: CalendarRange, title: "Capture calendar", sub: "Matric 2026 · July · Met" },
           { icon: Layers, title: "Pipeline", sub: "Winner → Test map → Post ready" },
           { icon: Sparkles, title: "AI copy + images", sub: "DeepSeek · Gemini" },
-          { icon: Send, title: "Scheduled sends", sub: "Email queue with webhook events" },
+          { icon: Send, title: "Scheduled sends", sub: "Email queue + delivery webhooks" },
         ].map((f) => (
           <div
             key={f.title}

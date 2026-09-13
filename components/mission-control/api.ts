@@ -82,6 +82,19 @@ export async function createCampaign(input: CampaignInput): Promise<{ id: string
   return (await response.json()) as { id: string; status: string };
 }
 
+export async function updateCampaignStatus(
+  id: string,
+  status: "draft" | "in_progress" | "scheduled" | "sent" | "cancelled",
+): Promise<{ id: string; status: string }> {
+  const response = await fetch(`/api/campaigns/${id}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ status }),
+  });
+  if (!response.ok) throw new Error(await apiError(response));
+  return (await response.json()) as { id: string; status: string };
+}
+
 export async function scheduleSend(input: ScheduleInput): Promise<{ id: string; status: string; scheduledFor: string }> {
   const response = await fetch("/api/sends/schedule", {
     method: "POST",

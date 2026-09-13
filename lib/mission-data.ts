@@ -46,6 +46,8 @@ export interface PipeCard {
   /** Blocked reason — card waits (founder gate, consent, dependency) instead
    *  of advancing; tapping a blocked card unblocks it and logs the decision. */
   blocked?: string;
+  /** Real campaign row id — seed-slot cards omit this and stay client-only. */
+  campaignId?: string;
 }
 
 /** A recorded decision in the campaign brain (source + reasoning + rollback). */

@@ -16,7 +16,7 @@ import {
 } from "../../lib/mission-data";
 import { SLOTS, SLOT_IDS, type ProductSlot, type SlotConfig, type SlotId } from "../../lib/slots";
 import { LogoutButton } from "../logout-button";
-import { createCampaign, scheduleSend, streamDraft, tomorrowNineSast } from "./api";
+import { createCampaign, scheduleSend, streamDraft, tomorrowNineSast, updateCampaignStatus } from "./api";
 import { CampaignMemory } from "./campaign-memory";
 import { GenerateModal } from "./generate-modal";
 import { KpiGrid } from "./kpi-grid";
@@ -31,20 +31,60 @@ interface MissionControlProps {
   initialCampaigns: Array<{ id: string; title: string; brief: string; channel: string; status: string }>;
 }
 
+function stageForCampaignStatus(status: string): (typeof STAGES)[number] {
+  switch (status) {
+    case "in_progress":
+      return "Editor";
+    case "scheduled":
+      return "Post ready";
+    case "sent":
+      return "Winner";
+    default:
+      return "Draft";
+  }
+}
+
+function statusForPipelineStage(stage: string): "draft" | "in_progress" | "scheduled" | "sent" {
+  switch (stage) {
+    case "Editor":
+    case "Test map":
+      return "in_progress";
+    case "Post ready":
+      return "scheduled";
+    case "Winner":
+      return "sent";
+    default:
+      return "draft";
+  }
+}
+
 function buildPipeline(
   cfg: SlotConfig,
   initialCampaigns: MissionControlProps["initialCampaigns"],
 ): Record<string, PipeCard[]> {
-  const draftCards: PipeCard[] = initialCampaigns.map((c) => ({
-    title: c.title,
-    sub: c.status === "draft" ? "draft · awaiting human editor" : c.status,
-    tag: "ai",
-    brand: "env",
-  }));
-  return {
+  const next: Record<string, PipeCard[]> = {
     ...cfg.pipe,
-    Draft: [...draftCards, ...(cfg.pipe.Draft ?? [])],
+    Winner: [...(cfg.pipe.Winner ?? [])],
+    "Test map": [...(cfg.pipe["Test map"] ?? [])],
+    Draft: [...(cfg.pipe.Draft ?? [])],
+    Editor: [...(cfg.pipe.Editor ?? [])],
+    "Post ready": [...(cfg.pipe["Post ready"] ?? [])],
   };
+  for (const campaign of initialCampaigns) {
+    if (campaign.status === "cancelled") continue;
+    const stage = stageForCampaignStatus(campaign.status);
+    next[stage] = [
+      {
+        title: campaign.title,
+        sub: campaign.status === "draft" ? "draft · awaiting human editor" : campaign.status,
+        tag: "ai",
+        brand: "env",
+        campaignId: campaign.id,
+      },
+      ...(next[stage] ?? []),
+    ];
+  }
+  return next;
 }
 
 function unionBy<T>(arrays: T[][], key: (t: T) => string): T[] {
@@ -387,7 +427,13 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
       setPipeline((prev) => ({
         ...prev,
         Draft: [
-          { title, sub: "AI draft → awaiting human editor", tag: "ai", brand: "env" },
+          {
+            title,
+            sub: "AI draft → awaiting human editor",
+            tag: "ai",
+            brand: "env",
+            campaignId: campaign.id,
+          },
           ...(prev.Draft ?? []),
         ],
       }));
@@ -459,15 +505,15 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
         });
         return;
       }
+      const idx = STAGES.indexOf(stage as (typeof STAGES)[number]);
+      const nextStage = idx >= 0 && idx < STAGES.length - 1 ? STAGES[idx + 1]! : "Winner";
       setPipeline((prev) => {
-        const idx = STAGES.indexOf(stage as (typeof STAGES)[number]);
         if (idx < 0) return prev;
         const next: Record<string, PipeCard[]> = {
           ...prev,
           [stage]: (prev[stage] ?? []).filter((c) => c.title !== title),
         };
         if (idx < STAGES.length - 1) {
-          const nextStage = STAGES[idx + 1]!;
           next[nextStage] = [...(prev[nextStage] ?? []), card];
         } else {
           // Post ready → winner. Mark it PROVEN and close the loop.
@@ -475,6 +521,11 @@ export default function MissionControl({ userName, userEmail, initialCampaigns }
         }
         return next;
       });
+      if (card.campaignId) {
+        void updateCampaignStatus(card.campaignId, statusForPipelineStage(nextStage)).catch((err) => {
+          setPostState(err instanceof Error ? err.message : "Could not update campaign");
+        });
+      }
     },
     [pipeline, addDecision],
   );
